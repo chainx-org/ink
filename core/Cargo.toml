@@ -23,6 +23,7 @@ ink_alloc = { path = "../alloc/", default-features = false }
 ink_utils = { path = "../utils/", default-features = false }
 
 scale = { package = "parity-scale-codec", version = "1.0", default-features = false, features = ["derive", "full"] }
+old_scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive", "full"] }
 type-metadata = { git = "https://github.com/type-metadata/type-metadata.git", default-features = false, features = ["derive"], optional = true }
 derive_more = { version = "0.15", default-features = false, features = ["no_std"] }
 smallvec = { version = "0.6.10", default-features = false, features = ["union"] }
@@ -38,6 +39,7 @@ std = [
     "ink_alloc/std",
     "ink_utils/std",
     "scale/std",
+    "old_scale/std",
     "type-metadata/std",
     "smallvec/std",
 ]
@@ -46,3 +48,5 @@ ink-generate-abi = [
     "type-metadata",
     "std",
 ]
+old-codec = []
+no-ink-alloc = []

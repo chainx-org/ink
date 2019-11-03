@@ -278,10 +278,17 @@ impl<T> Encode for Stash<T> {
 }
 
 impl<T> Decode for Stash<T> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let header = storage::Value::decode(input)?;
         let entries = SyncChunk::decode(input)?;
         Ok(Self { header, entries })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
+        let header = storage::Value::decode(input)?;
+        let entries = SyncChunk::decode(input)?;
+        Some(Self { header, entries })
     }
 }
 

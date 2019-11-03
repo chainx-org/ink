@@ -326,7 +326,17 @@ impl<T> scale::Encode for SyncCell<T> {
 }
 
 impl<T> scale::Decode for SyncCell<T> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
+        TypedCell::decode(input).map(|typed_cell| {
+            Self {
+                cell: typed_cell,
+                cache: Cache::default(),
+            }
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
         TypedCell::decode(input).map(|typed_cell| {
             Self {
                 cell: typed_cell,

@@ -31,7 +31,7 @@
     private_in_public,
     safe_extern_statics,
     unconditional_recursion,
-    unions_with_drop_fields,
+    // unions_with_drop_fields,
     unused,
     unused_allocation,
     unused_comparisons,
@@ -46,6 +46,9 @@
     unused_results,
     // missing-copy-implementations
 )]
+
+#[cfg(feature = "old-codec")]
+extern crate old_scale as scale;
 
 #[macro_use]
 mod state;

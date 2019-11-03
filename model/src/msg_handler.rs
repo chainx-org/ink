@@ -58,6 +58,7 @@ pub struct CallData {
 }
 
 impl Decode for CallData {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> CoreResult<Self, scale::Error> {
         let selector = MessageHandlerSelector::decode(input)?;
         let mut param_buf = Vec::new();
@@ -65,6 +66,18 @@ impl Decode for CallData {
             param_buf.push(byte)
         }
         Ok(Self {
+            selector,
+            raw_params: param_buf,
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
+        let selector = MessageHandlerSelector::decode(input)?;
+        let mut param_buf = Vec::new();
+        while let Some(byte) = input.read_byte() {
+            param_buf.push(byte)
+        }
+        Some(Self {
             selector,
             raw_params: param_buf,
         })
@@ -320,8 +333,12 @@ macro_rules! impl_handle_call_for_chain {
                 env: &mut ExecutionEnv<State, Env>,
                 data: CallData,
             ) -> Result<Vec<u8>> {
+                #[cfg(not(feature = "old-codec"))]
                 let args = <Msg as Message>::Input::decode(&mut &data.params()[..])
                     .map_err(|_| Error::InvalidArguments)?;
+                #[cfg(feature = "old-codec")]
+                let args = <Msg as Message>::Input::decode(&mut &data.params()[..])
+                    .ok_or(Error::InvalidArguments)?;
                 let result = (self.raw_handler)(env, args);
                 if $requires_flushing {
                     env.state.flush()

@@ -93,7 +93,17 @@ impl<T> scale::Encode for SyncChunk<T> {
 }
 
 impl<T> scale::Decode for SyncChunk<T> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
+        TypedChunk::decode(input).map(|typed_chunk| {
+            Self {
+                chunk: typed_chunk,
+                cache: Default::default(),
+            }
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
         TypedChunk::decode(input).map(|typed_chunk| {
             Self {
                 chunk: typed_chunk,

@@ -50,11 +50,14 @@ extern crate ink_alloc;
 #[cfg(not(feature = "std"))]
 extern crate alloc;
 
+#[cfg(feature = "old-codec")]
+extern crate old_scale as scale;
+
 #[cfg(all(test, feature = "std"))]
 mod test_utils;
 
 mod byte_utils;
 pub mod env;
-pub mod env2;
+// pub mod env2;
 pub mod memory;
 pub mod storage;

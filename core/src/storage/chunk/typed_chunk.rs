@@ -100,7 +100,17 @@ impl<T> scale::Encode for TypedChunk<T> {
 }
 
 impl<T> scale::Decode for TypedChunk<T> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
+        RawChunk::decode(input).map(|raw_chunk| {
+            Self {
+                chunk: raw_chunk,
+                non_clone: NonCloneMarker::default(),
+            }
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
         RawChunk::decode(input).map(|raw_chunk| {
             Self {
                 chunk: raw_chunk,

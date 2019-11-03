@@ -47,7 +47,17 @@ impl<T> scale::Encode for TypedCell<T> {
 }
 
 impl<T> scale::Decode for TypedCell<T> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
+        RawCell::decode(input).map(|raw_cell| {
+            Self {
+                cell: raw_cell,
+                non_clone: NonCloneMarker::default(),
+            }
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
         RawCell::decode(input).map(|raw_cell| {
             Self {
                 cell: raw_cell,

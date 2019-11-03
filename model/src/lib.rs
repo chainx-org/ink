@@ -39,6 +39,9 @@
     unused_results
 )]
 
+#[cfg(feature = "old-codec")]
+extern crate old_scale as scale;
+
 #[macro_use]
 mod state;
 

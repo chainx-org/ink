@@ -226,10 +226,20 @@ impl<T> Decode for BinaryHeap<T>
 where
     T: Codec,
 {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let len = storage::Value::decode(input)?;
         let entries = SyncChunk::decode(input)?;
         Ok(Self {
+            len,
+            entries: DuplexSyncChunk::new(entries),
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
+        let len = storage::Value::decode(input)?;
+        let entries = SyncChunk::decode(input)?;
+        Some(Self {
             len,
             entries: DuplexSyncChunk::new(entries),
         })

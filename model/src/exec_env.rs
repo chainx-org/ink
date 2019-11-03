@@ -150,6 +150,11 @@ impl<T: Env> EnvHandler<T> {
         T::caller()
     }
 
+    /// Returns the value transferred along with this call or as endowment.
+    pub fn value_transferred(&self) -> T::Balance {
+        T::value_transferred()
+    }
+
     /// Returns the given data back to the caller.
     ///
     /// # Note

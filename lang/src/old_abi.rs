@@ -267,6 +267,9 @@ pub enum PrimitiveTypeDescription {
     /// The `i128` primitive signed integer.
     #[serde(rename = "i128")]
     I128,
+    /// The `Vec<u8>` primitive.
+    #[serde(rename = "Vec<u8>")]
+    Text,
     /// The SRML address type.
     AccountId,
     /// The SRML balance type.
@@ -302,6 +305,7 @@ impl TryFrom<&syn::TypePath> for PrimitiveTypeDescription {
             "Hash" => Ok(PrimitiveTypeDescription::Hash),
             "Moment" => Ok(PrimitiveTypeDescription::Moment),
             "BlockNumber" => Ok(PrimitiveTypeDescription::BlockNumber),
+            "Text" => Ok(PrimitiveTypeDescription::Text),
             unsupported => {
                 bail!(
                     ty,

@@ -160,10 +160,17 @@ impl<K, V> scale::Encode for HashMap<K, V> {
 }
 
 impl<K, V> scale::Decode for HashMap<K, V> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let len = storage::Value::decode(input)?;
         let entries = SyncChunk::decode(input)?;
         Ok(Self { len, entries })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
+        let len = storage::Value::decode(input)?;
+        let entries = SyncChunk::decode(input)?;
+        Some(Self { len, entries })
     }
 }
 

@@ -83,7 +83,12 @@ impl scale::Encode for RawChunk {
 }
 
 impl scale::Decode for RawChunk {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
+        Key::decode(input).map(|key| unsafe { Self::new_unchecked(key) })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
         Key::decode(input).map(|key| unsafe { Self::new_unchecked(key) })
     }
 }

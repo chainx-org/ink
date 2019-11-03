@@ -157,10 +157,17 @@ impl<T> scale::Encode for Vec<T> {
 }
 
 impl<T> scale::Decode for Vec<T> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let len = storage::Value::decode(input)?;
         let cells = SyncChunk::decode(input)?;
         Ok(Self { len, cells })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
+        let len = storage::Value::decode(input)?;
+        let cells = SyncChunk::decode(input)?;
+        Some(Self { len, cells })
     }
 }
 

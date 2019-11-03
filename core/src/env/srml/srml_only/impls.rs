@@ -215,7 +215,14 @@ where
         if result != 0 {
             return Err(CallError)
         }
-        U::decode(&mut &read_scratch_buffer()[..]).map_err(|_| CallError)
+        #[cfg(not(feature = "old-codec"))]
+        {
+            U::decode(&mut &read_scratch_buffer()[..]).map_err(|_| CallError)
+        }
+        #[cfg(feature = "old-codec")]
+        {
+            U::decode(&mut &read_scratch_buffer()[..]).ok_or(CallError)
+        }
     }
 
     fn create(
@@ -242,7 +249,15 @@ where
         if result != 0 {
             return Err(CreateError)
         }
-        <Self as EnvTypes>::AccountId::decode(&mut &read_scratch_buffer()[..])
-            .map_err(|_| CreateError)
+        #[cfg(not(feature = "old-codec"))]
+        {
+            <Self as EnvTypes>::AccountId::decode(&mut &read_scratch_buffer()[..])
+                .map_err(|_| CreateError)
+        }
+        #[cfg(feature = "old-codec")]
+        {
+            <Self as EnvTypes>::AccountId::decode(&mut &read_scratch_buffer()[..])
+                .ok_or(CreateError)
+        }
     }
 }

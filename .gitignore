@@ -15,3 +15,5 @@ Cargo.lock
 
 # Ignore history files.
 **/.history/**
+
+.idea

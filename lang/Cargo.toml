@@ -21,6 +21,7 @@ include = ["Cargo.toml", "src/**/*.rs", "README.md", "LICENSE"]
 ink_utils = { path = "../utils/", default-features = false }
 ink_model = { path = "../model/", default-features = false }
 scale = { package = "parity-scale-codec", version = "1.0", default-features = false, features = ["derive"] }
+old_scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive"] }
 
 quote = "0.6"
 syn = { version = "0.15", features = ["parsing", "full", "extra-traits"] }
@@ -44,6 +45,7 @@ std = [
     "ink_utils/std",
     "ink_model/std",
     "scale/std",
+    "old_scale/std",
     "itertools/use_std",
     "either/use_std",
     "serde/std",
@@ -55,3 +57,4 @@ test-env = [
 ink-generate-abi = [
     "std",
 ]
+old-codec = ["ink_model/old-codec"]

@@ -474,8 +474,12 @@ where
         // Consumes the contract since nothing should be done afterwards.
         use ink_core::storage::alloc::Initialize as _;
         self.env.initialize(());
+        #[cfg(not(feature = "old-codec"))]
         let deploy_params =
             DeployArgs::decode(&mut &input[..]).map_err(|_err| RetCode::failure())?;
+        #[cfg(feature = "old-codec")]
+        let deploy_params =
+            DeployArgs::decode(&mut &input[..]).ok_or(RetCode::failure())?;
         (self.deployer.deploy_fn)(&mut self.env, deploy_params);
         self.env.state.flush();
         Ok(())

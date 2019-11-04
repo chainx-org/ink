@@ -49,4 +49,3 @@ ink-generate-abi = [
     "std",
 ]
 old-codec = []
-no-ink-alloc = []

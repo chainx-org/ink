@@ -29,6 +29,8 @@ derive_more = { version = "0.15", default-features = false, features = ["no_std"
 smallvec = { version = "0.6.10", default-features = false, features = ["union"] }
 cfg-if = "0.1"
 
+xassets = { package = "xrml-xassets-assets", path = "../../../../../chainx/src/github.com/chainpool/ChainX/xrml/xassets/assets", default-features = false, features = ["no_panic_handler", "no_oom", "no_global_allocator"]}
+
 [features]
 default = ["test-env"]
 test-env = [
@@ -42,6 +44,7 @@ std = [
     "old_scale/std",
     "type-metadata/std",
     "smallvec/std",
+    "xassets/std",
 ]
 ink-generate-abi = [
     "ink_abi",
@@ -49,4 +52,3 @@ ink-generate-abi = [
     "std",
 ]
 old-codec = []
-no-ink-alloc = []

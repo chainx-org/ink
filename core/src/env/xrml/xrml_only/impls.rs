@@ -54,7 +54,7 @@ fn write_scratch_buffer(data: &[u8]) {
     }
 }
 
-/// The SRML contract environment storage
+/// The XRML contract environment storage
 pub enum XrmlEnvStorage {}
 
 impl EnvStorage for XrmlEnvStorage {
@@ -83,7 +83,7 @@ impl EnvStorage for XrmlEnvStorage {
     }
 }
 
-/// The SRML contracts environment.
+/// The XRML contracts environment.
 pub struct XrmlEnv<T>
 where
     T: EnvTypes,
@@ -103,7 +103,7 @@ where
     type Call = <T as EnvTypes>::Call;
 }
 
-macro_rules! impl_getters_for_srml_env {
+macro_rules! impl_getters_for_xrml_env {
     ( $( ($name:ident, $ext_name:ident, $ret_type:ty) ),* ) => {
         $(
             fn $name() -> $ret_type {
@@ -151,7 +151,7 @@ where
         read_scratch_buffer()
     }
 
-    impl_getters_for_srml_env!(
+    impl_getters_for_xrml_env!(
         (address, ext_address, <Self as EnvTypes>::AccountId),
         (balance, ext_balance, <Self as EnvTypes>::Balance),
         (caller, ext_caller, <Self as EnvTypes>::AccountId),

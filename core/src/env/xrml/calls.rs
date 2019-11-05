@@ -1,3 +1,5 @@
+// Copyright 2019 Chainpool
+//
 // Copyright 2019 Parity Technologies (UK) Ltd.
 // This file is part of ink!.
 //
@@ -19,17 +21,16 @@ use core::convert::TryInto;
 use scale::{
     Decode,
     Encode,
+    Input,
     Output,
 };
 
-#[cfg(feature = "old-codec")]
 #[cfg_attr(feature = "test-env", derive(Debug, Clone, PartialEq, Eq))]
 pub enum Address<T: EnvTypes, AccountIndex> {
     Id(T::AccountId),
     Index(AccountIndex),
 }
 
-#[cfg(feature = "old-codec")]
 fn need_more_than<T: PartialOrd>(a: T, b: T) -> Option<T> {
     if a < b {
         Some(b)
@@ -44,13 +45,12 @@ fn need_more_than<T: PartialOrd>(a: T, b: T) -> Option<T> {
 /// This implementation MUST be kept in sync with substrate, tests below will ensure that.
 ///
 /// [substrate-address]: https://github.com/paritytech/substrate/blob/ec62d24c602912f07bbc416711376d9b8e5782c5/srml/indices/src/address.rs#L61
-#[cfg(feature = "old-codec")]
-impl<T, AccountIndex> scale::Decode for Address<T, AccountIndex>
+impl<T, AccountIndex> Decode for Address<T, AccountIndex>
 where
     T: EnvTypes,
-    AccountIndex: scale::Decode + From<u32> + PartialOrd + Copy + Clone,
+    AccountIndex: Decode + From<u32> + PartialOrd + Copy + Clone,
 {
-    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
+    fn decode<I: Input>(input: &mut I) -> Option<Self> {
         Some(match input.read_byte()? {
             x @ 0x00..=0xef => Address::Index(AccountIndex::from(x as u32)),
             0xfc => {
@@ -115,7 +115,6 @@ where
     }
 }
 
-#[cfg(feature = "old-codec")]
 #[derive(Encode, Decode)]
 #[cfg_attr(feature = "test-env", derive(Debug, Clone, PartialEq, Eq))]
 pub enum XAssets<T: EnvTypes, AccountIndex> {

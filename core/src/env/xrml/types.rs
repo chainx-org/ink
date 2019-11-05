@@ -1,3 +1,5 @@
+// Copyright 2019 Chainpool
+//
 // Copyright 2018-2019 Parity Technologies (UK) Ltd.
 // This file is part of ink!.
 //
@@ -32,49 +34,29 @@ use type_metadata::Metadata;
 
 use super::calls;
 
-/// The SRML fundamental types.
+/// The XRML fundamental types.
+///
+/// The differences between DefaultSrmlTypes and DefaultXrmlTypes are:
+/// 1. Balance uses u64 in DefaultXrmlTypes instead of u128.
+/// 2. Call contains the dispatchable Calls in ChainX, currently supporting PCX transfer only.
+///
+/// Otherwise DefaultSrmlTypes and DefaultXrmlTypes are actually the same.
 #[cfg_attr(feature = "test-env", derive(Debug, Clone, PartialEq, Eq))]
 pub enum DefaultXrmlTypes {}
 
-/// Empty enum for default Call type, so it cannot be constructed.
-/// For calling into the runtime, a user defined Call type required.
-/// See https://github.com/paritytech/ink-types-node-runtime.
-///
-/// # Note
-///
-/// Some traits are only implemented to satisfy the constraints of the test
-/// environment, in order to keep the code size small.
-///
 /// The default ChainX call type.
 #[derive(Encode, Decode)]
 #[cfg_attr(feature = "test-env", derive(Debug, Clone, PartialEq, Eq))]
 pub enum Call {
-    #[cfg(feature = "old-codec")]
     #[codec(index = "8")]
     XAssets(calls::XAssets<DefaultXrmlTypes, AccountIndex>),
 }
 
-#[cfg(feature = "old-codec")]
 impl From<calls::XAssets<DefaultXrmlTypes, AccountIndex>> for Call {
     fn from(xassets_call: calls::XAssets<DefaultXrmlTypes, AccountIndex>) -> Call {
         Call::XAssets(xassets_call)
     }
 }
-
-/// This implementation is only to satisfy the Decode constraint in the
-/// test environment. Since Call cannot be constructed then just return
-/// None, but this should never be called.
-// #[cfg(feature = "test-env")]
-// impl scale::Decode for Call {
-// #[cfg(not(feature = "old-codec"))]
-// fn decode<I: scale::Input>(_value: &mut I) -> Result<Self, scale::Error> {
-// Err("Call cannot be instantiated".into())
-// }
-// #[cfg(feature = "old-codec")]
-// fn decode<I: scale::Input>(_value: &mut I) -> Option<Self> {
-// None
-// }
-// }
 
 impl EnvTypes for DefaultXrmlTypes {
     type AccountId = AccountId;
@@ -85,7 +67,7 @@ impl EnvTypes for DefaultXrmlTypes {
     type Call = Call;
 }
 
-/// The default SRML address type.
+/// The default XRML address type.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Encode, Decode)]
 #[cfg_attr(feature = "ink-generate-abi", derive(Metadata))]
 pub struct AccountId([u8; 32]);
@@ -105,12 +87,13 @@ impl<'a> TryFrom<&'a [u8]> for AccountId {
     }
 }
 
-/// The default SRML balance type.
+/// The default XRML balance type.
 pub type Balance = u64;
 
+/// The default XRML account index type.
 pub type AccountIndex = u32;
 
-/// The default SRML hash type.
+/// The default XRML hash type.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Encode, Decode)]
 #[cfg_attr(feature = "ink-generate-abi", derive(Metadata))]
 pub struct Hash([u8; 32]);
@@ -136,10 +119,10 @@ impl<'a> TryFrom<&'a [u8]> for Hash {
     }
 }
 
-/// The default SRML moment type.
+/// The default XRML moment type.
 pub type Moment = u64;
 
-/// The default SRML blocknumber type.
+/// The default XRML blocknumber type.
 pub type BlockNumber = u64;
 
 impl Flush for AccountId {

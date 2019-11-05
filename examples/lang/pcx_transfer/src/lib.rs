@@ -1,5 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate alloc;
+
+use alloc::vec::Vec;
+
 use ink_core::{
     env::{
         chainx_calls,
@@ -36,10 +40,10 @@ contract! {
         }
 
         /// Dispatches a `transfer` call to the Balances srml module
-        pub(external) fn pcx_transfer(&mut self, dest: AccountId, value: Balance) {
+        pub(external) fn pcx_transfer(&mut self, dest: AccountId, value: Balance, memo: Vec<u8>) {
             let dest_addr = chainx_calls::Address::Id(dest);
             env.println(&format!("pcx_transfer dest: {:?}, value: {:?}", dest, value));
-            let transfer_call = chainx_calls::XAssets::<DefaultXrmlTypes, AccountIndex>::transfer(dest_addr, b"PCX".to_vec(), value, b"memo".to_vec());
+            let transfer_call = chainx_calls::XAssets::<DefaultXrmlTypes, AccountIndex>::transfer(dest_addr, b"PCX".to_vec(), value, memo);
             env.dispatch_call(transfer_call);
         }
 

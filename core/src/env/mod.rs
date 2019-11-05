@@ -55,6 +55,16 @@ pub use self::{
     },
 };
 
+#[cfg(feature = "old-codec")]
+pub mod xrml;
+
+#[cfg(feature = "old-codec")]
+pub use self::xrml::{
+    calls as chainx_calls,
+    AccountIndex,
+    DefaultXrmlTypes,
+};
+
 /// The storage environment implementation that is currently being used.
 ///
 /// This may be either
@@ -64,7 +74,12 @@ pub use self::{
 ///   that can be inspected by the user and used
 ///   for testing contracts off-chain.
 #[cfg(not(feature = "test-env"))]
+#[cfg(not(feature = "old-codec"))]
 pub(self) type ContractEnvStorage = self::srml::SrmlEnvStorage;
+
+#[cfg(not(feature = "test-env"))]
+#[cfg(feature = "old-codec")]
+pub(self) type ContractEnvStorage = self::xrml::XrmlEnvStorage;
 
 /// The storage environment implementation for the test environment.
 #[cfg(feature = "test-env")]
@@ -74,7 +89,12 @@ pub(self) type ContractEnvStorage = self::test_env::TestEnvStorage;
 ///
 /// Generic over user supplied EnvTypes for different runtimes
 #[cfg(not(feature = "test-env"))]
+#[cfg(not(feature = "old-codec"))]
 pub type ContractEnv<T> = self::srml::SrmlEnv<T>;
+
+#[cfg(not(feature = "test-env"))]
+#[cfg(feature = "old-codec")]
+pub type ContractEnv<T> = self::xrml::XrmlEnv<T>;
 
 /// The contract environment implementation for the test environment
 #[cfg(feature = "test-env")]

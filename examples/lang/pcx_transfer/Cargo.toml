@@ -1,20 +1,20 @@
 [package]
-name = "{{name}}"
+name = "pcx_transfer"
 version = "0.1.0"
 authors = ["[your_name] <[your_email]>"]
 edition = "2018"
 
 [dependencies]
-ink_abi = { git = "https://github.com/chainx-org/ink", package = "ink_abi", default-features = false, optional = true }
-ink_core = { git = "https://github.com/chainx-org/ink", package = "ink_core", default-features = false, features = ["old-codec"] }
-ink_model = { git = "https://github.com/chainx-org/ink", package = "ink_model", default-features = false, features = ["old-codec"] }
-ink_lang = { git = "https://github.com/chainx-org/ink", package = "ink_lang", default-features = false, features = ["old-codec"] }
+ink_abi = { path = "../../../abi", package = "ink_abi", default-features = false, optional = true }
+ink_core = { path = "../../../core", package = "ink_core", default-features = false, features = ["old-codec"] }
+ink_model = { path = "../../../model", package = "ink_model", default-features = false, features = ["old-codec"] }
+ink_lang = { path = "../../../lang", package = "ink_lang", default-features = false, features = ["old-codec"] }
 
 scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive"] }
 type-metadata = { git = "https://github.com/type-metadata/type-metadata.git", default-features = false, features = ["derive"], optional = true }
 
 [lib]
-name = "{{name}}"
+name = "pcx_transfer"
 crate-type = [
     # Used for normal contract Wasm blobs.
     "cdylib",

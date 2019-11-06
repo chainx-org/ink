@@ -128,6 +128,14 @@ pub enum XAssets<T: EnvTypes, AccountIndex> {
     ),
 }
 
+#[derive(Encode, Decode)]
+#[cfg_attr(feature = "test-env", derive(Debug, Clone, PartialEq, Eq))]
+pub enum XContracts<T: EnvTypes> {
+    #[allow(non_camel_case_types)]
+    #[codec(index = "6")]
+    convert_to_asset(T::AccountId, T::AccountId, T::Balance),
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

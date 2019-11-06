@@ -50,11 +50,19 @@ pub enum DefaultXrmlTypes {}
 pub enum Call {
     #[codec(index = "8")]
     XAssets(calls::XAssets<DefaultXrmlTypes, AccountIndex>),
+    #[codec(index = "20")]
+    XContracts(calls::XContracts<DefaultXrmlTypes>),
 }
 
 impl From<calls::XAssets<DefaultXrmlTypes, AccountIndex>> for Call {
     fn from(xassets_call: calls::XAssets<DefaultXrmlTypes, AccountIndex>) -> Call {
         Call::XAssets(xassets_call)
+    }
+}
+
+impl From<calls::XContracts<DefaultXrmlTypes>> for Call {
+    fn from(xcontracts_call: calls::XContracts<DefaultXrmlTypes>) -> Call {
+        Call::XContracts(xcontracts_call)
     }
 }
 

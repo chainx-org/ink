@@ -1,9 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// extern crate alloc;
-
-// use alloc::vec::Vec;
-
 use ink_core::{
     env::{
         chainx_calls,
@@ -38,7 +34,7 @@ contract! {
 
     impl PcxTransfer {
         /// Flips the current state of our smart contract.
-        pub(external) fn flip(&mut self, _test: Option<bool>) {
+        pub(external) fn flip(&mut self) {
             *self.value = !*self.value;
         }
 

@@ -132,7 +132,7 @@ pub enum XAssets<T: EnvTypes, AccountIndex> {
 #[cfg_attr(feature = "test-env", derive(Debug, Clone, PartialEq, Eq))]
 pub enum XContracts<T: EnvTypes> {
     #[allow(non_camel_case_types)]
-    #[codec(index = "6")]
+    #[codec(index = "8")]
     convert_to_asset(T::AccountId, #[codec(compact)] T::Balance),
 }
 

@@ -29,12 +29,6 @@ derive_more = { version = "0.15", default-features = false, features = ["no_std"
 smallvec = { version = "0.6.10", default-features = false, features = ["union"] }
 cfg-if = "0.1"
 
-[dependencies.xassets]
-package = "xrml-xassets-assets"
-git = "https://github.com/chainx-org/ChainXPlaceholder"
-default-features = false
-features = ["no_panic_handler", "no_oom", "no_global_allocator"]
-
 [features]
 default = ["test-env"]
 test-env = [
@@ -48,7 +42,6 @@ std = [
     "old_scale/std",
     "type-metadata/std",
     "smallvec/std",
-    "xassets/std",
 ]
 ink-generate-abi = [
     "ink_abi",

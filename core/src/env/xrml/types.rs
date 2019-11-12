@@ -23,6 +23,7 @@ use core::{
 
 use crate::{
     env::EnvTypes,
+    memory::vec::Vec,
     storage::Flush,
 };
 use scale::{
@@ -132,6 +133,12 @@ pub type Moment = u64;
 
 /// The default XRML blocknumber type.
 pub type BlockNumber = u64;
+
+/// The default XRML xassets token type.
+pub type Token = Vec<u8>;
+
+/// The default XRML transaction memo type.
+pub type Memo = Vec<u8>;
 
 impl Flush for AccountId {
     fn flush(&mut self) {}

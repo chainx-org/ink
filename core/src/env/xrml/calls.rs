@@ -16,7 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with ink!.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::env::EnvTypes;
+use crate::env::{
+    xrml::types::{
+        Memo,
+        Token,
+    },
+    EnvTypes,
+};
 use core::convert::TryInto;
 use scale::{
     Decode,
@@ -120,12 +126,7 @@ where
 pub enum XAssets<T: EnvTypes, AccountIndex> {
     #[allow(non_camel_case_types)]
     #[codec(index = "3")]
-    transfer(
-        Address<T, AccountIndex>,
-        xassets::Token,
-        T::Balance,
-        xassets::Memo,
-    ),
+    transfer(Address<T, AccountIndex>, Token, T::Balance, Memo),
 }
 
 #[derive(Encode, Decode)]

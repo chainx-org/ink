@@ -1,4 +1,4 @@
-// Copyright 2019 Chainpool
+// Copyright 2019 ChainX
 //
 // Copyright 2019 Parity Technologies (UK) Ltd.
 // This file is part of ink!.

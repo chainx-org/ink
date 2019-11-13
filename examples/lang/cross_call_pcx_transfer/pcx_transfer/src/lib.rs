@@ -6,10 +6,7 @@ use ink_core::{
         AccountIndex,
         DefaultXrmlTypes,
     },
-    memory::{
-        format,
-        vec::Vec,
-    },
+    memory::format,
     storage,
 };
 use ink_lang::contract;

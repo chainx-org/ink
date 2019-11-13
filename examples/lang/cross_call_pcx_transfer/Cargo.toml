@@ -1,14 +1,14 @@
 [package]
 name = "cross_call_pcx_transfer"
 version = "0.1.0"
-authors = ["Parity Technologies <admin@parity.io>"]
+authors = ["ChainX <https://github.com/chainx-org>"]
 edition = "2018"
 
 [dependencies]
-ink_abi = { git = "https://github.com/chainx-org/ink", branch = "chainx-develop", default-features = false, features = ["derive"], optional = true }
-ink_core = { git = "https://github.com/chainx-org/ink", branch = "chainx-develop", default-features = false, features = ["old-codec"] }
-ink_model = { git = "https://github.com/chainx-org/ink", branch = "chainx-develop", default-features = false, features = ["old-codec"] }
-ink_lang = { git = "https://github.com/chainx-org/ink", branch = "chainx-develop", default-features = false, features = ["old-codec"] }
+ink_abi = { path = "../../../abi", default-features = false, features = ["derive"], optional = true }
+ink_core = { path = "../../../core", default-features = false, features = ["old-codec"] }
+ink_model = { path = "../../../model", default-features = false, features = ["old-codec"] }
+ink_lang = { path = "../../../lang", default-features = false, features = ["old-codec"] }
 
 scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive"] }
 type-metadata = { git = "https://github.com/type-metadata/type-metadata.git", default-features = false, features = ["derive"], optional = true }

@@ -5,7 +5,7 @@ authors = ["[your_name] <[your_email]>"]
 edition = "2018"
 
 [dependencies]
-ink_abi = { git = "https://github.com/chainx-org/ink", package = "ink_abi", default-features = false, optional = true }
+ink_abi = { git = "https://github.com/chainx-org/ink", package = "ink_abi", default-features = false, features = ["derive"], optional = true }
 ink_core = { git = "https://github.com/chainx-org/ink", package = "ink_core", default-features = false, features = ["old-codec"] }
 ink_model = { git = "https://github.com/chainx-org/ink", package = "ink_model", default-features = false, features = ["old-codec"] }
 ink_lang = { git = "https://github.com/chainx-org/ink", package = "ink_lang", default-features = false, features = ["old-codec"] }

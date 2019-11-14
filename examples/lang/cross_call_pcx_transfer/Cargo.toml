@@ -18,10 +18,10 @@ pcx_transfer = { path = "pcx_transfer", default-features = false, features = ["i
 [lib]
 name = "cross_call_pcx_transfer"
 crate-type = [
-	# Used for normal contract Wasm blobs.
-	"cdylib",
-	# Used for ABI generation.
-	"rlib",
+    # Used for normal contract Wasm blobs.
+    "cdylib",
+    # Used for ABI generation.
+    "rlib",
 ]
 
 [features]
@@ -37,7 +37,7 @@ std = [
     "pcx_transfer/std",
 ]
 test-env = [
-	"std",
+    "std",
     "ink_core/test-env",
     "ink_model/test-env",
     "ink_lang/test-env",
@@ -63,7 +63,7 @@ overflow-checks = true
 
 [workspace]
 members = [
-	".ink/abi_gen",
+    ".ink/abi_gen",
     "pcx_transfer"
 ]
 exclude = [

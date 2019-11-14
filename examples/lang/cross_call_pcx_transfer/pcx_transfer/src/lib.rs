@@ -35,10 +35,9 @@ contract! {
             *self.value = !*self.value;
         }
 
-        /// Dispatches a `transfer` call to the Balances srml module
+        /// Dispatches a `transfer` call to the ChainX Assets module.
         pub(external) fn pcx_transfer(&mut self, dest: AccountId, value: Balance) {
             let dest_addr = chainx_calls::Address::Id(dest);
-            env.println(&format!("pcx_transfer dest: {:?}, value: {:?}", dest, value));
             let transfer_call = chainx_calls::XAssets::<DefaultXrmlTypes, AccountIndex>::transfer(dest_addr, b"PCX".to_vec(), value, b"memo".to_vec());
             env.dispatch_call(transfer_call);
         }

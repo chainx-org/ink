@@ -14,6 +14,9 @@
 
 use core::marker::PhantomData;
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 use crate::env2::{
     call::{
         state,

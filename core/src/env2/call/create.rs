@@ -28,6 +28,9 @@ use crate::{
     memory::vec::Vec,
 };
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 pub mod state {
     pub use crate::env2::call::state::{
         Sealed,

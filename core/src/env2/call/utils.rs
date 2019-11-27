@@ -14,6 +14,9 @@
 
 use derive_more::From;
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 use crate::memory::{
     vec,
     vec::Vec,
@@ -118,6 +121,7 @@ impl CallData {
 }
 
 impl scale::Encode for CallData {
+    #[cfg(not(feature = "old-codec"))]
     fn size_hint(&self) -> usize {
         self.bytes.len()
     }
@@ -128,6 +132,7 @@ impl scale::Encode for CallData {
 }
 
 impl scale::Decode for CallData {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(
         input: &mut I,
     ) -> core::result::Result<Self, scale::Error> {
@@ -142,5 +147,19 @@ impl scale::Decode for CallData {
             ))
         }
         Ok(Self { bytes })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> core::result::Option<Self> {
+        let remaining_len = input.remaining_len().unwrap_or(None).unwrap_or(0);
+        let mut bytes = Vec::with_capacity(remaining_len);
+        while let Ok(byte) = input.read_byte() {
+            bytes.push(byte);
+        }
+        if bytes.len() < 4 {
+            return Err(scale::Error::from(
+                "require at least 4 bytes for input data",
+            ))
+        }
+        Some(Self { bytes })
     }
 }

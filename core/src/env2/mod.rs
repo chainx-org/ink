@@ -44,6 +44,10 @@
 
 mod buffer_arena;
 pub mod call;
+#[cfg(feature = "old-codec")]
+pub mod chainx_call;
+#[cfg(feature = "old-codec")]
+pub mod chainx_types;
 mod dyn_env;
 mod env_access;
 mod error;
@@ -72,6 +76,18 @@ cfg_if! {
         ///
         /// This configuration compiled for off-chain testing.
         pub type EnvImpl<T> = self::test::TestEnv<T>;
+    } else if #[cfg(feature = "old-codec")] {
+        mod xrml;
+        pub use self::xrml::{
+            RetCode,
+        };
+        /// The currently chosen environmental implementation.
+        ///
+        /// When compiling for Wasm and Substrate this refers to `SrmlEnv` and
+        /// when compiling for off-chain testing this refer to `TestEnv`.
+        ///
+        /// This configuration compiled as Wasm for Substrate.
+        pub type EnvImpl<T> = self::xrml::XrmlEnv<T>;
     } else {
         mod srml;
         pub use self::srml::{
@@ -116,3 +132,6 @@ pub use self::{
     },
     types::DefaultSrmlTypes,
 };
+
+#[cfg(feature = "old-codec")]
+pub use self::chainx_types::DefaultXrmlTypes;

@@ -26,6 +26,9 @@ use crate::env2::{
 };
 use ink_prelude::vec::Vec;
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 pub mod state {
     pub use crate::env2::call::state::{
         Sealed,

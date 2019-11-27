@@ -30,6 +30,9 @@ use type_metadata::{
     TypeId,
 };
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 use crate::storage::{
     alloc::{
         Allocate,
@@ -323,8 +326,20 @@ impl<T> scale::Encode for SyncCell<T> {
     }
 }
 
+#[cfg(not(feature = "old-codec"))]
 impl<T> scale::Decode for SyncCell<T> {
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
+        TypedCell::decode(input).map(|typed_cell| {
+            Self {
+                cell: typed_cell,
+                cache: Cache::default(),
+            }
+        })
+    }
+}
+#[cfg(feature = "old-codec")]
+impl<T> old_scale::Decode for SyncCell<T> {
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
         TypedCell::decode(input).map(|typed_cell| {
             Self {
                 cell: typed_cell,

@@ -17,6 +17,9 @@ use core::iter::{
     ExactSizeIterator,
 };
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 #[cfg(feature = "ink-generate-abi")]
 use ink_abi::{
     HasLayout,
@@ -156,11 +159,21 @@ impl<T> scale::Encode for Vec<T> {
     }
 }
 
+#[cfg(not(feature = "old-codec"))]
 impl<T> scale::Decode for Vec<T> {
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let len = storage::Value::decode(input)?;
         let cells = SyncChunk::decode(input)?;
         Ok(Self { len, cells })
+    }
+}
+
+#[cfg(feature = "old-codec")]
+impl<T> old_scale::Decode for Vec<T> {
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
+        let len = storage::Value::decode(input)?;
+        let cells = SyncChunk::decode(input)?;
+        Some(Self { len, cells })
     }
 }
 

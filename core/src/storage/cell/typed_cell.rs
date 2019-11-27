@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 use crate::storage::{
     alloc::{
         Allocate,
@@ -46,8 +49,20 @@ impl<T> scale::Encode for TypedCell<T> {
     }
 }
 
+#[cfg(not(feature = "old-codec"))]
 impl<T> scale::Decode for TypedCell<T> {
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
+        RawCell::decode(input).map(|raw_cell| {
+            Self {
+                cell: raw_cell,
+                non_clone: NonCloneMarker::default(),
+            }
+        })
+    }
+}
+#[cfg(feature = "old-codec")]
+impl<T> old_scale::Decode for TypedCell<T> {
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
         RawCell::decode(input).map(|raw_cell| {
             Self {
                 cell: raw_cell,

@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 use core::marker::PhantomData;
 
 use crate::{
@@ -234,6 +237,14 @@ where
     /// If the called contract has trapped.
     pub fn invoke_contract(&mut self, call_data: &CallParams<T, ()>) -> Result<()> {
         T::invoke_contract(&mut self.buffer, call_data)
+    }
+
+    /// Invokes a runtime dispatchable function with the given call data.
+    pub fn invoke_runtime<D>(&mut self, call_data: &D)
+    where
+        D: scale::Encode,
+    {
+        T::invoke_runtime(&mut self.buffer, call_data)
     }
 
     /// Evaluates a contract message and returns its result.

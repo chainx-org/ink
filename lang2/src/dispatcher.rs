@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
+#[cfg(not(feature = "old-codec"))]
+use ::scale;
+
 use core::any::TypeId;
 
 use ink_core::{
@@ -212,9 +218,16 @@ macro_rules! impl_dispatcher_for {
                 S: AccessEnv<Env>,
                 Env: ink_core::env2::Env,
             {
+                #[cfg(not(feature = "old-codec"))]
                 use scale::Decode as _;
+                #[cfg(feature = "old-codec")]
+                use old_scale::Decode as _;
+                #[cfg(not(feature = "old-codec"))]
                 let args = <Msg as FnInput>::Input::decode(&mut &data.params()[..])
                     .map_err(|_| DispatchError::InvalidParameters)?;
+                #[cfg(feature = "old-codec")]
+                let args = <Msg as FnInput>::Input::decode(&mut &data.params()[..])
+                    .ok_or(DispatchError::InvalidParameters)?;
                 let result = self.eval(storage, args);
                 if TypeId::of::<<Msg as FnOutput>::Output>() != TypeId::of::<()>() {
                     AccessEnv::access_env(storage).output(&result)

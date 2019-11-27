@@ -14,6 +14,12 @@
 
 use core::marker::PhantomData;
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Decode,
     Encode,
@@ -215,7 +221,13 @@ where
         if result != 0 {
             return Err(CallError)
         }
-        U::decode(&mut &read_scratch_buffer()[..]).map_err(|_| CallError)
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "old-codec")] {
+                U::decode(&mut &read_scratch_buffer()[..]).ok_or(CallError)
+            } else {
+                U::decode(&mut &read_scratch_buffer()[..]).map_err(|_| CallError)
+            }
+        }
     }
 
     fn create(
@@ -242,7 +254,14 @@ where
         if result != 0 {
             return Err(CreateError)
         }
-        <Self as EnvTypes>::AccountId::decode(&mut &read_scratch_buffer()[..])
-            .map_err(|_| CreateError)
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "old-codec")] {
+                <Self as EnvTypes>::AccountId::decode(&mut &read_scratch_buffer()[..])
+                    .ok_or(CreateError)
+            } else {
+                <Self as EnvTypes>::AccountId::decode(&mut &read_scratch_buffer()[..])
+                    .map_err(|_| CreateError)
+            }
+        }
     }
 }

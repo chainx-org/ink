@@ -20,54 +20,53 @@
 //! Users are required to provide their own type definitions and `EnvTypes`
 //! implementations in order to write ink! contracts for other chain configurations.
 
-use core::{
-    array::TryFromSliceError,
-    convert::TryFrom,
-};
-
-use derive_more::From;
-
-#[cfg(feature = "old-codec")]
 use old_scale::{
-    Decode,
-    Encode,
-};
-#[cfg(not(feature = "old-codec"))]
-use scale::{
     Decode,
     Encode,
 };
 #[cfg(feature = "ink-generate-abi")]
 use type_metadata::Metadata;
 
-use crate::{
-    env2::EnvTypes,
-    storage::Flush,
-};
 use ink_prelude::vec::Vec;
+
+use crate::env2::EnvTypes;
+
+use super::chainx_calls::{
+    XAssets,
+    XContracts,
+};
 
 /// The fundamental types of the SRML default configuration.
 #[cfg_attr(feature = "test-env", derive(Debug, Clone, PartialEq, Eq))]
 #[cfg_attr(feature = "ink-generate-abi", derive(type_metadata::Metadata))]
-pub enum DefaultSrmlTypes {}
+pub enum DefaultXrmlTypes {}
 
-impl EnvTypes for DefaultSrmlTypes {
-    type AccountId = AccountId;
+impl EnvTypes for DefaultXrmlTypes {
+    type AccountId = super::types::AccountId;
     type Balance = Balance;
-    type Hash = Hash;
+    type Hash = super::types::Hash;
     type Moment = Moment;
     type BlockNumber = BlockNumber;
     type Call = Call;
 }
 
-/// The default SRML balance type.
-pub type Balance = u128;
+/// The default XRML balance type.
+pub type Balance = u64;
 
 /// The default SRML moment type.
 pub type Moment = u64;
 
 /// The default SRML blocknumber type.
 pub type BlockNumber = u64;
+
+/// The default XRML account index type.
+pub type AccountIndex = u32;
+
+/// The default XRML xassets token type.
+pub type Token = Vec<u8>;
+
+/// The default XRML transaction memo type.
+pub type Memo = Vec<u8>;
 
 /// Empty enum for default Call type, so it cannot be constructed.
 /// For calling into the runtime, a user defined Call type required.
@@ -89,65 +88,23 @@ pub type BlockNumber = u64;
 ///
 /// A user defined `Call` type is required for calling into the runtime.
 /// For more info visit: https://github.com/paritytech/ink-types-node-runtime
+#[derive(Encode, Decode)]
 #[cfg_attr(feature = "test-env", derive(Debug, Clone, PartialEq, Eq))]
-pub enum Call {}
+pub enum Call {
+    #[codec(index = "8")]
+    XAssets(XAssets<DefaultXrmlTypes, AccountIndex>),
+    #[codec(index = "20")]
+    XContracts(XContracts<DefaultXrmlTypes>),
+}
 
-/// The implementation enforces at runtime that `Encode` is not called
-/// for the default SRML `Call` type but for performance reasons this check
-/// is removed for the on-chain (release mode) version.
-impl Encode for Call {
-    fn encode(&self) -> Vec<u8> {
-        debug_assert!(false, "cannot encode default SRML `Call` type");
-        Vec::new()
+impl From<XAssets<DefaultXrmlTypes, AccountIndex>> for Call {
+    fn from(xassets_call: XAssets<DefaultXrmlTypes, AccountIndex>) -> Self {
+        Call::XAssets(xassets_call)
     }
 }
 
-/// This implementation is only to satisfy the Decode constraint in the
-/// test environment. Since Call cannot be constructed then just return
-/// None, but this should never be called.
-#[cfg(not(feature = "old-codec"))]
-#[cfg(feature = "test-env")]
-impl scale::Decode for Call {
-    fn decode<I: scale::Input>(_value: &mut I) -> Result<Self, scale::Error> {
-        Err("The default SRML `Call` type cannot be used for runtime calls".into())
+impl From<XContracts<DefaultXrmlTypes>> for Call {
+    fn from(xcontracts_call: XContracts<DefaultXrmlTypes>) -> Self {
+        Call::XContracts(xcontracts_call)
     }
 }
-
-#[cfg(feature = "old-codec")]
-impl old_scale::Decode for Call {
-    fn decode<I: old_scale::Input>(_value: &mut I) -> Option<Self> {
-        None
-    }
-}
-
-/// The default SRML `AccountId` type.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Encode, Decode, From, Default)]
-#[cfg_attr(feature = "ink-generate-abi", derive(Metadata))]
-pub struct AccountId([u8; 32]);
-
-impl<'a> TryFrom<&'a [u8]> for AccountId {
-    type Error = TryFromSliceError;
-
-    fn try_from(bytes: &'a [u8]) -> Result<Self, TryFromSliceError> {
-        let address = <[u8; 32]>::try_from(bytes)?;
-        Ok(Self(address))
-    }
-}
-
-impl Flush for AccountId {}
-
-/// The default SRML `Hash` type.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Encode, Decode, From, Default)]
-#[cfg_attr(feature = "ink-generate-abi", derive(Metadata))]
-pub struct Hash([u8; 32]);
-
-impl<'a> TryFrom<&'a [u8]> for Hash {
-    type Error = TryFromSliceError;
-
-    fn try_from(bytes: &'a [u8]) -> Result<Self, TryFromSliceError> {
-        let address = <[u8; 32]>::try_from(bytes)?;
-        Ok(Self(address))
-    }
-}
-
-impl Flush for Hash {}

@@ -24,11 +24,22 @@ use ink_abi::{
     LayoutStruct,
     StorageLayout,
 };
+
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Codec,
     Decode,
     Encode,
 };
+
 #[cfg(feature = "ink-generate-abi")]
 use type_metadata::Metadata;
 
@@ -226,10 +237,20 @@ impl<T> Decode for BinaryHeap<T>
 where
     T: Codec,
 {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let len = storage::Value::decode(input)?;
         let entries = SyncChunk::decode(input)?;
         Ok(Self {
+            len,
+            entries: DuplexSyncChunk::new(entries),
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
+        let len = storage::Value::decode(input)?;
+        let entries = SyncChunk::decode(input)?;
+        Some(Self {
             len,
             entries: DuplexSyncChunk::new(entries),
         })

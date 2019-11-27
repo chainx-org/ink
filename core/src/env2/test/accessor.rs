@@ -19,6 +19,9 @@
 //! `SrmlEnv` implementation since here we already have our buffers in the
 //! contract's memory.
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 use core::{
     cell::{
         Ref,
@@ -278,8 +281,16 @@ where
                 .read(key)
                 .map(|entry| entry.data())
                 .ok_or(Error::InvalidStorageRead)?;
-            Ok(scale::Decode::decode(&mut &encoded[..])
-                .map_err(|_| Error::InvalidStorageRead)?)
+
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "old-codec")] {
+                    scale::Decode::decode(&mut &encoded[..])
+                        .ok_or(Error::InvalidStorageRead)
+                } else {
+                    Ok(scale::Decode::decode(&mut &encoded[..])
+                        .map_err(|_| Error::InvalidStorageRead)?)
+                }
+            }
         })
     }
 
@@ -521,8 +532,16 @@ where
                 .read(key)
                 .map(|entry| entry.data())
                 .ok_or(Error::InvalidStorageKey)?;
-            Ok(scale::Decode::decode(&mut &encoded[..])
-                .map_err(|_| Error::InvalidStorageRead)?)
+
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "old-codec")] {
+                    scale::Decode::decode(&mut &encoded[..])
+                        .ok_or(Error::InvalidStorageRead)
+                } else {
+                    Ok(scale::Decode::decode(&mut &encoded[..])
+                        .map_err(|_| Error::InvalidStorageRead)?)
+                }
+            }
         })
     }
 }

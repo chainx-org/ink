@@ -17,6 +17,7 @@ include = ["Cargo.toml", "src/**/*.rs", "README.md", "LICENSE"]
 ink_core = { path = "../core", default-features = false }
 ink_prelude = { path = "../prelude/", default-features = false }
 scale = { package = "parity-scale-codec", version = "1.1", default-features = false, features = ["derive", "full"] }
+old_scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive", "full"] }
 
 [features]
 default = ["test-env"]
@@ -29,3 +30,4 @@ std = [
     "ink_prelude/std",
     "scale/std",
 ]
+old-codec = []

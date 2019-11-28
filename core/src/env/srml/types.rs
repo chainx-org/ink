@@ -51,19 +51,26 @@ pub enum DefaultSrmlTypes {}
 /// environment, in order to keep the code size small.
 #[cfg_attr(feature = "test-env", derive(Debug, Clone, PartialEq, Eq))]
 pub enum Call {}
+#[cfg(not(feature = "old-codec"))]
 impl scale::Encode for Call {}
+#[cfg(feature = "old-codec")]
+impl old_scale::Encode for Call {}
 
 /// This implementation is only to satisfy the Decode constraint in the
 /// test environment. Since Call cannot be constructed then just return
 /// None, but this should never be called.
 #[cfg(feature = "test-env")]
+#[cfg(not(feature = "old-codec"))]
 impl scale::Decode for Call {
     #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(_value: &mut I) -> Result<Self, scale::Error> {
         Err("Call cannot be instantiated".into())
     }
-    #[cfg(feature = "old-codec")]
-    fn decode<I: scale::Input>(_value: &mut I) -> Option<Self> {
+}
+
+#[cfg(feature = "old-codec")]
+impl old_scale::Decode for Call {
+    fn decode<I: old_scale::Input>(_value: &mut I) -> Option<Self> {
         None
     }
 }

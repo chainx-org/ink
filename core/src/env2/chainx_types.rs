@@ -39,7 +39,7 @@ use crate::{
     storage::Flush,
 };
 
-use super::chainx_call::{
+use super::chainx_calls::{
     XAssets,
     XContracts,
 };
@@ -50,9 +50,9 @@ use super::chainx_call::{
 pub enum DefaultXrmlTypes {}
 
 impl EnvTypes for DefaultXrmlTypes {
-    type AccountId = AccountId;
+    type AccountId = super::types::AccountId;
     type Balance = Balance;
-    type Hash = Hash;
+    type Hash = super::types::Hash;
     type Moment = Moment;
     type BlockNumber = BlockNumber;
     type Call = Call;
@@ -115,42 +115,4 @@ impl From<XContracts<DefaultXrmlTypes>> for Call {
     fn from(xcontracts_call: XContracts<DefaultXrmlTypes>) -> Self {
         Call::XContracts(xcontracts_call)
     }
-}
-
-/// The default SRML `AccountId` type.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Encode, Decode, From, Default)]
-#[cfg_attr(feature = "ink-generate-abi", derive(Metadata))]
-pub struct AccountId([u8; 32]);
-
-impl<'a> TryFrom<&'a [u8]> for AccountId {
-    type Error = TryFromSliceError;
-
-    fn try_from(bytes: &'a [u8]) -> Result<Self, TryFromSliceError> {
-        let address = <[u8; 32]>::try_from(bytes)?;
-        Ok(Self(address))
-    }
-}
-
-impl Flush for AccountId {
-    #[inline]
-    fn flush(&mut self) {}
-}
-
-/// The default SRML `Hash` type.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Encode, Decode, From, Default)]
-#[cfg_attr(feature = "ink-generate-abi", derive(Metadata))]
-pub struct Hash([u8; 32]);
-
-impl<'a> TryFrom<&'a [u8]> for Hash {
-    type Error = TryFromSliceError;
-
-    fn try_from(bytes: &'a [u8]) -> Result<Self, TryFromSliceError> {
-        let address = <[u8; 32]>::try_from(bytes)?;
-        Ok(Self(address))
-    }
-}
-
-impl Flush for Hash {
-    #[inline]
-    fn flush(&mut self) {}
 }

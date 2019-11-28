@@ -59,7 +59,10 @@ pub trait EnvTypes {
     /// The type of block number.
     type BlockNumber: Codec + Clone + PartialEq + Eq;
     /// The type of a call into the runtime
+    #[cfg(not(feature = "old-codec"))]
     type Call: scale::Encode;
+    #[cfg(feature = "old-codec")]
+    type Call: old_scale::Encode;
 }
 
 #[cfg(feature = "test-env")]

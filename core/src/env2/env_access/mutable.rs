@@ -242,6 +242,14 @@ where
         T::invoke_contract(&mut self.buffer, call_data)
     }
 
+    /// Invokes a runtime dispatchable function with the given call data.
+    pub fn invoke_runtime<D>(&mut self, call_data: &D)
+    where
+        D: scale::Encode,
+    {
+        T::invoke_runtime(&mut self.buffer, call_data)
+    }
+
     /// Evaluates a contract message and returns its result.
     ///
     /// # Errors

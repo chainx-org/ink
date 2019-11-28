@@ -105,10 +105,18 @@ impl Encode for Call {
 /// This implementation is only to satisfy the Decode constraint in the
 /// test environment. Since Call cannot be constructed then just return
 /// None, but this should never be called.
+#[cfg(not(feature = "old-codec"))]
 #[cfg(feature = "test-env")]
 impl scale::Decode for Call {
     fn decode<I: scale::Input>(_value: &mut I) -> Result<Self, scale::Error> {
         Err("The default SRML `Call` type cannot be used for runtime calls".into())
+    }
+}
+
+#[cfg(feature = "old-codec")]
+impl old_scale::Decode for Call {
+    fn decode<I: old_scale::Input>(_value: &mut I) -> Option<Self> {
+        None
     }
 }
 

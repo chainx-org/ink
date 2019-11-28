@@ -44,7 +44,7 @@
 
 pub mod call;
 #[cfg(feature = "old-codec")]
-pub mod chainx_call;
+pub mod chainx_calls;
 #[cfg(feature = "old-codec")]
 pub mod chainx_types;
 mod dyn_env;
@@ -87,18 +87,6 @@ cfg_if! {
         ///
         /// This configuration compiled as Wasm for Substrate.
         pub type EnvImpl<T> = self::xrml::XrmlEnv<T>;
-    } else {
-        mod srml;
-        pub use self::srml::{
-            RetCode,
-        };
-        /// The currently chosen environmental implementation.
-        ///
-        /// When compiling for Wasm and Substrate this refers to `SrmlEnv` and
-        /// when compiling for off-chain testing this refer to `TestEnv`.
-        ///
-        /// This configuration compiled as Wasm for Substrate.
-        pub type EnvImpl<T> = self::srml::SrmlEnv<T>;
     }
 }
 

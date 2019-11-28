@@ -39,6 +39,7 @@ use crate::{
 };
 
 /// The environmental types usable by contracts defined with ink!.
+#[cfg(not(feature = "test-env"))]
 pub trait EnvTypes {
     /// The type of an address.
     type AccountId: 'static + Codec + Clone + PartialEq + Eq;
@@ -52,6 +53,25 @@ pub trait EnvTypes {
     type BlockNumber: 'static + Codec + Clone + PartialEq + Eq;
     /// The type of a call into the runtime
     type Call: 'static + scale::Encode;
+}
+
+/// The environmental types usable by contracts defined with ink!.
+/// For the test environment extra trait bounds are required for using the types in unit tests.
+#[cfg(feature = "test-env")]
+pub trait EnvTypes {
+    /// The type of an address.
+    type AccountId: 'static + Codec + Clone + PartialEq + Eq + core::fmt::Debug;
+    /// The type of balances.
+    type Balance: 'static + Codec + Clone + PartialEq + Eq + core::fmt::Debug;
+    /// The type of hash.
+    type Hash: 'static + Codec + Clone + PartialEq + Eq + core::fmt::Debug;
+    /// The type of timestamps.
+    type Moment: 'static + Codec + Clone + PartialEq + Eq + core::fmt::Debug;
+    /// The type of block number.
+    type BlockNumber: 'static + Codec + Clone + PartialEq + Eq + core::fmt::Debug;
+    /// The type of a call into the runtime.
+    /// Requires Decode for inspecting raw dispatched calls in the test environment.
+    type Call: 'static + Codec + Clone + PartialEq + Eq + core::fmt::Debug;
 }
 
 /// Allows reading contract properties.

@@ -18,6 +18,12 @@ use core::cell::{
 };
 use std::marker::PhantomData;
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Decode,
     Encode,
@@ -757,10 +763,19 @@ where
         let callee = &(callee.encode())[..];
         let value = &(value.encode())[..];
         TEST_ENV_DATA.with(|test_env| {
-            Decode::decode(
-                &mut &(test_env.borrow_mut().call(callee, gas, value, input_data))[..],
-            )
-            .map_err(|_| CallError)
+            cfg_if::cfg_if! {
+                if #[cfg(feature="old-codec")] {
+                    Decode::decode(
+                        &mut &(test_env.borrow_mut().call(callee, gas, value, input_data))[..],
+                    )
+                    .ok_or(CallError)
+                } else {
+                    Decode::decode(
+                        &mut &(test_env.borrow_mut().call(callee, gas, value, input_data))[..],
+                    )
+                    .map_err(|_| CallError)
+                }
+            }
         })
     }
 
@@ -773,12 +788,23 @@ where
         let code_hash = &(code_hash.encode())[..];
         let value = &(value.encode())[..];
         TEST_ENV_DATA.with(|test_env| {
-            Decode::decode(
-                &mut &(test_env
-                    .borrow_mut()
-                    .create(code_hash, gas_limit, value, input_data))[..],
-            )
-            .map_err(|_| CreateError)
+            cfg_if::cfg_if! {
+                if #[cfg(feature="old-codec")] {
+                    Decode::decode(
+                        &mut &(test_env
+                            .borrow_mut()
+                            .create(code_hash, gas_limit, value, input_data))[..],
+                    )
+                    .ok_or(CreateError)
+                } else {
+                    Decode::decode(
+                        &mut &(test_env
+                            .borrow_mut()
+                            .create(code_hash, gas_limit, value, input_data))[..],
+                    )
+                    .map_err(|_| CreateError)
+                }
+            }
         })
     }
 }

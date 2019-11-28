@@ -23,6 +23,9 @@
 //! For this records are stored instead of performing certain operations
 //! that the user can query after or during the emulated contract execution.
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 use derive_more::From;
 
 use crate::{

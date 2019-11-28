@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
+    Decode,
+};
+
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Codec,
     Decode,
@@ -50,7 +57,10 @@ pub trait EnvTypes {
     /// The type of block number.
     type BlockNumber: Codec + Clone + PartialEq + Eq;
     /// The type of a call into the runtime
+    #[cfg(not(feature = "old-codec"))]
     type Call: scale::Encode;
+    #[cfg(feature = "old-codec")]
+    type Call: old_scale::Encode;
 }
 
 #[cfg(feature = "test-env")]

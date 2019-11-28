@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 use core::marker::PhantomData;
 
 use ink_core::env;
@@ -436,6 +439,9 @@ where
         // action after instantiation.
         //
         // Internally calls the associated call<Msg>.
+        #[cfg(feature = "old-codec")]
+        use old_scale::Decode;
+        #[cfg(not(feature = "old-codec"))]
         use scale::Decode;
         let input = Env::input();
         let call_data = CallData::decode(&mut &input[..]).unwrap();
@@ -472,8 +478,12 @@ where
         // Consumes the contract since nothing should be done afterwards.
         use ink_core::storage::alloc::Initialize as _;
         self.env.initialize(());
+        #[cfg(not(feature = "old-codec"))]
         let deploy_params =
             DeployArgs::decode(&mut &input[..]).map_err(|_err| RetCode::failure())?;
+        #[cfg(feature = "old-codec")]
+        let deploy_params =
+            DeployArgs::decode(&mut &input[..]).ok_or(RetCode::failure())?;
         (self.deployer.deploy_fn)(&mut self.env, deploy_params);
         self.env.state.flush();
         Ok(())
@@ -529,6 +539,9 @@ where
         let encoded_result = self
             .call_with(CallData::from_msg::<Msg>(input))
             .expect("`call` failed to execute properly");
+        #[cfg(feature = "old-codec")]
+        use old_scale::Decode;
+        #[cfg(not(feature = "old-codec"))]
         use scale::Decode;
         <Msg as Message>::Output::decode(&mut &encoded_result[..])
             .expect("`call_with` only encodes the correct types")

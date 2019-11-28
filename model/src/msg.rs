@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 use crate::msg_handler::MessageHandlerSelector;
 
 /// A message with an expected input type and output (result) type.

@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Decode,
     Encode,
@@ -68,9 +75,19 @@ pub unsafe fn load(key: Key) -> Option<Vec<u8>> {
 ///
 /// This operation must be the last operation performed by a called
 /// smart contract before it returns the execution back to its caller.
+#[cfg(not(feature = "old-codec"))]
 pub fn return_data<T, E>(data: T)
 where
-    T: Encode,
+    T: scale::Encode,
+    E: Env,
+{
+    E::return_data(&data.encode()[..])
+}
+
+#[cfg(feature = "old-codec")]
+pub fn return_data<T, E>(data: T)
+where
+    T: old_scale::Encode,
     E: Env,
 {
     E::return_data(&data.encode()[..])

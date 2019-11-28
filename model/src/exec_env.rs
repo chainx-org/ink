@@ -27,7 +27,15 @@ use ink_core::{
         Initialize,
     },
 };
+
+#[cfg(not(feature = "old-codec"))]
 use scale::{
+    Decode,
+    Encode as _,
+};
+
+#[cfg(feature = "old-codec")]
+use old_scale::{
     Decode,
     Encode as _,
 };
@@ -155,9 +163,17 @@ impl<T: Env> EnvHandler<T> {
     /// # Note
     ///
     /// This must be the last operation executed before returning execution back to the caller.
+    #[cfg(not(feature = "old-codec"))]
     pub fn return_data<V>(&self, data: V)
     where
         V: scale::Encode,
+    {
+        env::return_data::<V, T>(data)
+    }
+    #[cfg(feature = "old-codec")]
+    pub fn return_data<V>(&self, data: V)
+    where
+        V: old_scale::Encode,
     {
         env::return_data::<V, T>(data)
     }

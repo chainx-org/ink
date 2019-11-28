@@ -14,6 +14,7 @@
 
 #[cfg(feature = "old-codec")]
 use old_scale::Codec;
+
 #[cfg(not(feature = "old-codec"))]
 use scale::Codec;
 

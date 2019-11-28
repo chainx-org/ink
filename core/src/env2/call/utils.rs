@@ -148,17 +148,17 @@ impl scale::Decode for CallData {
         }
         Ok(Self { bytes })
     }
+
     #[cfg(feature = "old-codec")]
-    fn decode<I: scale::Input>(input: &mut I) -> core::result::Option<Self> {
-        let remaining_len = input.remaining_len().unwrap_or(None).unwrap_or(0);
-        let mut bytes = Vec::with_capacity(remaining_len);
-        while let Ok(byte) = input.read_byte() {
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
+        // let remaining_len = input.remaining_len().unwrap_or(None).unwrap_or(0);
+        // let mut bytes = Vec::with_capacity(remaining_len);
+        let mut bytes = Vec::new();
+        while let Some(byte) = input.read_byte() {
             bytes.push(byte);
         }
         if bytes.len() < 4 {
-            return Err(scale::Error::from(
-                "require at least 4 bytes for input data",
-            ))
+            return None
         }
         Some(Self { bytes })
     }

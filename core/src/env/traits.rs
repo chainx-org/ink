@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
+    Decode,
+};
+
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Codec,
     Decode,

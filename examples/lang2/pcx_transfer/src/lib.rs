@@ -10,12 +10,50 @@ use ink_core::{
     storage,
 };
 use ink_lang2 as ink;
+use ink_prelude::{
+    collections::BTreeMap,
+    format,
+};
+use scale::{
+    Decode,
+    Encode,
+    KeyedVec,
+};
+
+mod crypto {
+    /// Do a Blake2 256-bit hash and place result in `dest`.
+    pub fn blake2_256_into(data: &[u8], dest: &mut [u8; 32]) {
+        dest.copy_from_slice(blake2_rfc::blake2b::blake2b(32, &[], data).as_bytes());
+    }
+
+    /// Do a Blake2 256-bit hash and return result.
+    pub fn blake2_256(data: &[u8]) -> [u8; 32] {
+        let mut r = [0; 32];
+        blake2_256_into(data, &mut r);
+        r
+    }
+}
+
+#[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Copy, Encode, Decode)]
+#[cfg_attr(feature = "ink-generate-abi", derive(type_metadata::Metadata))]
+pub enum AssetType {
+    Free,
+    ReservedStaking,
+    ReservedStakingRevocation,
+    ReservedWithdrawal,
+    ReservedDexSpot,
+    ReservedDexFuture,
+    ReservedCurrency,
+    ReservedXRC20,
+    GasPayment,
+}
 
 #[ink::contract(version = "0.1.0")]
 mod pcx_transfer {
     #[ink(storage)]
     struct PcxTransfer {
         value: storage::Value<bool>,
+        test: storage::Value<AccountId>,
     }
 
     impl PcxTransfer {
@@ -29,29 +67,56 @@ mod pcx_transfer {
             self.new(false)
         }
 
+        // #[ink(message)]
+        // fn flip(&mut self) {
+        // *self.value = !self.get();
+        // }
+
+        ///// Dispatches a `transfer` call to the ChainX Assets module.
+        // #[ink(message)]
+        // fn pcx_transfer(&mut self, dest: AccountId, value: u64) {
+        // let dest_addr = chainx_calls::Address::Id(dest);
+        // // self.env()
+        // // .println(&format!("-- dest_addr: {:?}", dest_addr.clone()));
+        // let transfer_call =
+        // chainx_calls::XAssets::<DefaultXrmlTypes, AccountIndex>::transfer(
+        // dest_addr,
+        // b"PCX".to_vec(),
+        // value,
+        // b"memo".to_vec(),
+        // );
+        // self.env().println(&format!(
+        // "before transfer_call: {:?}",
+        // transfer_call.encode()
+        // ));
+        // self.env().invoke_runtime(&transfer_call);
+        // self.env().println(&format!("---- after transfer_call"));
+        // }
+
+        /// Returns the account balance, read directly from runtime storage
         #[ink(message)]
-        fn flip(&mut self) {
-            *self.value = !self.get();
+        fn get_asset_balance(
+            &self,
+            account: AccountId,
+        ) -> Result<BTreeMap<AssetType, u64>, ()> {
+            const BALANCE_OF: &[u8] = b"XAssets AssetBalance";
+            let pcx_balance = (account, b"PCX".to_vec());
+            let key = crypto::blake2_256(&pcx_balance.to_keyed_vec(BALANCE_OF));
+            let result = self
+                .env()
+                .get_runtime_storage::<BTreeMap<AssetType, u64>>(&key[..]);
+            self.env().println(&format!("---- Result: {:?}", result));
+            result.map_err(|_| {
+                self.env()
+                    .println("Fail to decode BTreeMap<AssetType, u64>");
+                ()
+            })
         }
 
-        /// Dispatches a `transfer` call to the ChainX Assets module.
-        #[ink(message)]
-        fn pcx_transfer(&mut self, dest: AccountId, value: u64) {
-            let dest_addr = chainx_calls::Address::Id(dest);
-            let transfer_call =
-                chainx_calls::XAssets::<DefaultXrmlTypes, AccountIndex>::transfer(
-                    dest_addr,
-                    b"PCX".to_vec(),
-                    value,
-                    b"memo".to_vec(),
-                );
-            self.env().invoke_runtime(&transfer_call);
-        }
-
-        #[ink(message)]
-        fn get(&self) -> bool {
-            *self.value
-        }
+        // #[ink(message)]
+        // fn get(&self) -> bool {
+        // *self.value
+        // }
     }
 
     #[cfg(test)]

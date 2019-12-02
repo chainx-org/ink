@@ -19,10 +19,19 @@ use ink_abi::{
     LayoutStruct,
     StorageLayout,
 };
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Decode,
     Encode,
 };
+
 #[cfg(feature = "ink-generate-abi")]
 use type_metadata::Metadata;
 

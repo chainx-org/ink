@@ -22,6 +22,9 @@ use ink_abi::{
 #[cfg(feature = "ink-generate-abi")]
 use type_metadata::Metadata;
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 use super::BitBlock;
 use crate::storage::{
     self,
@@ -65,11 +68,21 @@ impl scale::Encode for BitVec {
     }
 }
 
+#[cfg(not(feature = "old-codec"))]
 impl scale::Decode for BitVec {
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let len = storage::Value::decode(input)?;
         let blocks = SyncChunk::decode(input)?;
         Ok(Self { len, blocks })
+    }
+}
+
+#[cfg(feature = "old-codec")]
+impl old_scale::Decode for BitVec {
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
+        let len = storage::Value::decode(input)?;
+        let blocks = SyncChunk::decode(input)?;
+        Some(Self { len, blocks })
     }
 }
 

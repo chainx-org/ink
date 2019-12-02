@@ -17,12 +17,6 @@ use core::{
     fmt::Debug,
 };
 
-use scale::{
-    Codec,
-    Decode,
-    Encode,
-};
-
 use crate::{
     storage::{
         alloc::{
@@ -34,6 +28,19 @@ use crate::{
         Key,
     },
     test_utils::run_test,
+};
+
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Codec,
+    Decode,
+    Encode,
 };
 
 fn empty_heap() -> BinaryHeap<i32> {

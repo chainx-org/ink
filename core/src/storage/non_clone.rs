@@ -14,6 +14,12 @@
 
 use core::marker::PhantomData;
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Decode,
     Encode,

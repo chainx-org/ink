@@ -28,6 +28,9 @@ use type_metadata::{
     TypeId,
 };
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 use super::CacheGuard;
 use crate::storage::{
     alloc::{
@@ -92,8 +95,20 @@ impl<T> scale::Encode for SyncChunk<T> {
     }
 }
 
+#[cfg(not(feature = "old-codec"))]
 impl<T> scale::Decode for SyncChunk<T> {
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
+        TypedChunk::decode(input).map(|typed_chunk| {
+            Self {
+                chunk: typed_chunk,
+                cache: Default::default(),
+            }
+        })
+    }
+}
+#[cfg(feature = "old-codec")]
+impl<T> old_scale::Decode for SyncChunk<T> {
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
         TypedChunk::decode(input).map(|typed_chunk| {
             Self {
                 chunk: typed_chunk,

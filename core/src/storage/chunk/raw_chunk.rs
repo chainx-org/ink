@@ -76,14 +76,28 @@ impl RawChunkCell<'_> {
     }
 }
 
+#[cfg(not(feature = "old-codec"))]
 impl scale::Encode for RawChunk {
     fn encode_to<W: scale::Output>(&self, dest: &mut W) {
         self.key.encode_to(dest)
     }
 }
+#[cfg(feature = "old-codec")]
+impl old_scale::Encode for RawChunk {
+    fn encode_to<W: old_scale::Output>(&self, dest: &mut W) {
+        self.key.encode_to(dest)
+    }
+}
 
+#[cfg(not(feature = "old-codec"))]
 impl scale::Decode for RawChunk {
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
+        Key::decode(input).map(|key| unsafe { Self::new_unchecked(key) })
+    }
+}
+#[cfg(feature = "old-codec")]
+impl old_scale::Decode for RawChunk {
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
         Key::decode(input).map(|key| unsafe { Self::new_unchecked(key) })
     }
 }

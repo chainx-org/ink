@@ -19,10 +19,20 @@ use ink_abi::{
     LayoutStruct,
     StorageLayout,
 };
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Decode,
     Encode,
 };
+
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 #[cfg(feature = "ink-generate-abi")]
 use type_metadata::Metadata;
 
@@ -277,11 +287,21 @@ impl<T> Encode for Stash<T> {
     }
 }
 
+#[cfg(not(feature = "old-codec"))]
 impl<T> Decode for Stash<T> {
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let header = storage::Value::decode(input)?;
         let entries = SyncChunk::decode(input)?;
         Ok(Self { header, entries })
+    }
+}
+
+#[cfg(feature = "old-codec")]
+impl<T> Decode for Stash<T> {
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
+        let header = storage::Value::decode(input)?;
+        let entries = SyncChunk::decode(input)?;
+        Some(Self { header, entries })
     }
 }
 

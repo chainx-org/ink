@@ -24,7 +24,15 @@ use crate::{
     },
 };
 use ink_prelude::vec::Vec;
+
+#[cfg(not(feature = "old-codec"))]
 use scale::{
+    Decode,
+    Encode,
+};
+
+#[cfg(feature = "old-codec")]
+use old_scale::{
     Decode,
     Encode,
 };

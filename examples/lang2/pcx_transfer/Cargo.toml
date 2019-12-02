@@ -16,7 +16,7 @@ scale = { package = "parity-codec", version = "3.5", default-features = false, f
 type-metadata = { git = "https://github.com/type-metadata/type-metadata.git", default-features = false, features = ["derive"], optional = true }
 
 [patch.'https://github.com/type-metadata/type-metadata']
-type-metadata = { path = "../../../../../../../data/src/github.com/type-metadata/type-metadata", default-features = false, features = ["derive"], optional = true}
+type-metadata = { git = "https://github.com/liuchengxu/type-metadata", default-features = false, features = ["derive"], optional = true}
 
 [lib]
 name = "pcx_transfer"

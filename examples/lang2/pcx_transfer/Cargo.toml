@@ -15,9 +15,6 @@ blake2-rfc = { version = "0.2.18", default-features = false }
 scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive"] }
 type-metadata = { git = "https://github.com/type-metadata/type-metadata.git", default-features = false, features = ["derive"], optional = true }
 
-[patch.'https://github.com/type-metadata/type-metadata']
-type-metadata = { git = "https://github.com/liuchengxu/type-metadata", default-features = false, features = ["derive"], optional = true}
-
 [lib]
 name = "pcx_transfer"
 crate-type = [

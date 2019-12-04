@@ -48,7 +48,7 @@ pub enum AssetType {
     GasPayment,
 }
 
-#[ink::contract(version = "0.1.0")]
+#[ink::contract(version = "0.1.0", env = DefaultXrmlTypes)]
 mod pcx_transfer {
     #[ink(storage)]
     struct PcxTransfer {

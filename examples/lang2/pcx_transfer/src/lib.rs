@@ -4,16 +4,16 @@
 use ink_core::{
     env2::{
         chainx_calls,
-        chainx_types::AccountIndex,
+        chainx_types::{
+            AccountIndex,
+            Call,
+        },
         DefaultXrmlTypes,
     },
     storage,
 };
 use ink_lang2 as ink;
-use ink_prelude::{
-    collections::BTreeMap,
-    format,
-};
+use ink_prelude::collections::BTreeMap;
 use scale::{
     Decode,
     Encode,
@@ -67,31 +67,21 @@ mod pcx_transfer {
             self.new(false)
         }
 
-        // #[ink(message)]
-        // fn flip(&mut self) {
-        // *self.value = !self.get();
-        // }
-
-        ///// Dispatches a `transfer` call to the ChainX Assets module.
-        // #[ink(message)]
-        // fn pcx_transfer(&mut self, dest: AccountId, value: u64) {
-        // let dest_addr = chainx_calls::Address::Id(dest);
-        // // self.env()
-        // // .println(&format!("-- dest_addr: {:?}", dest_addr.clone()));
-        // let transfer_call =
-        // chainx_calls::XAssets::<DefaultXrmlTypes, AccountIndex>::transfer(
-        // dest_addr,
-        // b"PCX".to_vec(),
-        // value,
-        // b"memo".to_vec(),
-        // );
-        // self.env().println(&format!(
-        // "before transfer_call: {:?}",
-        // transfer_call.encode()
-        // ));
-        // self.env().invoke_runtime(&transfer_call);
-        // self.env().println(&format!("---- after transfer_call"));
-        // }
+        /// Dispatches a `transfer` call to the ChainX Assets module.
+        #[ink(message)]
+        fn pcx_transfer(&mut self, dest: AccountId, value: u64) {
+            let dest_addr = chainx_calls::Address::Id(dest);
+            let transfer_call = Call::XAssets(chainx_calls::XAssets::<
+                DefaultXrmlTypes,
+                AccountIndex,
+            >::transfer(
+                dest_addr,
+                b"PCX".to_vec(),
+                value,
+                b"memo".to_vec(),
+            ));
+            self.env().invoke_runtime(&transfer_call);
+        }
 
         /// Returns the account balance, read directly from runtime storage
         #[ink(message)]
@@ -105,18 +95,12 @@ mod pcx_transfer {
             let result = self
                 .env()
                 .get_runtime_storage::<BTreeMap<AssetType, u64>>(&key[..]);
-            self.env().println(&format!("---- Result: {:?}", result));
             result.map_err(|_| {
                 self.env()
                     .println("Fail to decode BTreeMap<AssetType, u64>");
                 ()
             })
         }
-
-        // #[ink(message)]
-        // fn get(&self) -> bool {
-        // *self.value
-        // }
     }
 
     #[cfg(test)]

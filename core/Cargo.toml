@@ -37,7 +37,7 @@ std = [
     "ink_abi/std",
     "ink_alloc/std",
     "ink_prelude/std",
-    "scale/std",
+    "old_scale/std",
     "type-metadata/std",
 ]
 ink-generate-abi = [

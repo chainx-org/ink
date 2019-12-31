@@ -28,6 +28,6 @@ test-env = [
 std = [
     "ink_core/std",
     "ink_prelude/std",
-    "scale/std",
+    "old_scale/std",
 ]
 old-codec = []

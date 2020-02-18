@@ -136,6 +136,7 @@ impl EventHelpers<'_> {
 
         #[cfg(feature = "old-codec")]
         use old_scale::Encode;
+        #[allow(unused)]
         #[cfg(not(feature = "old-codec"))]
         use scale::Encode;
 

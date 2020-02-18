@@ -28,6 +28,7 @@ pub struct Error(&'static str);
 pub struct Error;
 
 impl Error {
+    #[allow(unused)]
     #[cfg(feature = "std")]
     /// Error description
     ///

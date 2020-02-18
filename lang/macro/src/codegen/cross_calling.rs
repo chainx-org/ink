@@ -146,6 +146,7 @@ impl CrossCalling<'_> {
             Decode,
             Encode,
         };
+        #[allow(unused)]
         #[cfg(not(feature = "old-codec"))]
         use scale::{
             Decode,

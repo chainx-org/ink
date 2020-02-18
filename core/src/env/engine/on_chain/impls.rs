@@ -31,6 +31,17 @@ use crate::env::{
 };
 use ink_primitives::Key;
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Decode,
+    Encode,
+};
+
 impl EnvInstance {
     /// Empties the contract-side scratch buffer.
     ///
@@ -64,29 +75,32 @@ impl EnvInstance {
     /// If the decoding into a value of `T` failed.
     fn decode_scratch_buffer<T>(&mut self) -> Result<T>
     where
-        T: scale::Decode,
+        T: Decode,
     {
         let req_len = self.read_scratch_buffer();
+        #[cfg(not(feature = "old-codec"))]
         scale::Decode::decode(&mut &self.buffer[0..req_len]).map_err(Into::into)
+        #[cfg(feature = "old-codec")]
+        old_scale::Decode::decode(&mut &self.buffer[0..req_len]).ok_or(Into::into)
     }
 
     /// Encodes the value into the contract-side scratch buffer.
     fn encode_into_buffer<T>(&mut self, value: T)
     where
-        T: scale::Encode,
+        T: Encode,
     {
         self.reset_buffer();
-        scale::Encode::encode_to(&value, &mut self.buffer);
+        Encode::encode_to(&value, &mut self.buffer);
     }
 
     /// Appends the encoded value into the contract-side scratch buffer
     /// and returns the byte ranges into the encoded region.
     fn append_encode_into_buffer<T>(&mut self, value: T) -> core::ops::Range<usize>
     where
-        T: scale::Encode,
+        T: Encode,
     {
         let start = self.buffer.len();
-        scale::Encode::encode_to(&value, &mut self.buffer);
+        Encode::encode_to(&value, &mut self.buffer);
         let end = self.buffer.len();
         core::ops::Range { start, end }
     }
@@ -94,7 +108,7 @@ impl EnvInstance {
     /// Returns the contract property value.
     fn get_property<T>(&mut self, ext_fn: fn()) -> Result<T>
     where
-        T: scale::Decode,
+        T: Decode,
     {
         ext_fn();
         self.decode_scratch_buffer().map_err(Into::into)
@@ -133,7 +147,7 @@ impl EnvInstance {
 impl Env for EnvInstance {
     fn set_contract_storage<V>(&mut self, key: Key, value: &V)
     where
-        V: scale::Encode,
+        V: Encode,
     {
         self.encode_into_buffer(value);
         ext::set_storage(key.as_bytes(), &self.buffer[..]);
@@ -141,7 +155,7 @@ impl Env for EnvInstance {
 
     fn get_contract_storage<R>(&mut self, key: Key) -> Option<Result<R>>
     where
-        R: scale::Decode,
+        R: Decode,
     {
         if ext::get_storage(key.as_bytes()).is_err() {
             return None
@@ -155,7 +169,7 @@ impl Env for EnvInstance {
 
     fn get_runtime_storage<R>(&mut self, runtime_key: &[u8]) -> Option<Result<R>>
     where
-        R: scale::Decode,
+        R: Decode,
     {
         if ext::get_runtime_storage(runtime_key).is_err() {
             return None
@@ -169,7 +183,7 @@ impl Env for EnvInstance {
 
     fn output<R>(&mut self, return_value: &R)
     where
-        R: scale::Encode,
+        R: Encode,
     {
         self.encode_into_buffer(return_value);
         ext::scratch_write(&self.buffer[..]);
@@ -256,7 +270,7 @@ impl TypedEnv for EnvInstance {
     fn emit_event<T, Event>(&mut self, event: Event)
     where
         T: EnvTypes,
-        Event: Topics<T> + scale::Encode,
+        Event: Topics<T> + Encode,
     {
         // Reset the contract-side buffer to append onto clean slate.
         self.reset_buffer();
@@ -301,7 +315,7 @@ impl TypedEnv for EnvInstance {
     ) -> Result<R>
     where
         T: EnvTypes,
-        R: scale::Decode,
+        R: Decode,
     {
         self.invoke_contract_impl(call_params)?;
         self.decode_scratch_buffer().map_err(Into::into)

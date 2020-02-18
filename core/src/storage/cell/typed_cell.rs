@@ -22,6 +22,9 @@ use crate::{
 use core::marker::PhantomData;
 use ink_primitives::Key;
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 /// A typed cell.
 ///
 /// Provides interpreted access to the associated contract storage slot.

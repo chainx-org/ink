@@ -24,6 +24,16 @@ use core::{
     marker::PhantomData,
 };
 use derive_more::From;
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Decode,
+    Encode,
+};
 
 /// A wrapper around an encoded entity that only allows type safe accesses.
 ///
@@ -70,7 +80,10 @@ pub struct TypedEncoded<T> {
 #[derive(Debug, From, PartialEq, Eq)]
 pub enum TypedEncodedError {
     /// Error upon decoding.
+    #[cfg(not(feature = "old-codec"))]
     Decode(scale::Error),
+    #[cfg(feature = "old-codec")]
+    Decode(crate::env::error::Error),
     /// When operating on instances with different types.
     #[from(ignore)]
     DifferentTypes {
@@ -126,7 +139,7 @@ impl<M> TypedEncoded<M> {
     /// Creates a new typed-encoded ininitialized by `value` of type `T`.
     pub fn new<T>(value: &T) -> Self
     where
-        T: scale::Encode + 'static,
+        T: Encode + 'static,
     {
         Self {
             encoded: value.encode(),
@@ -142,7 +155,7 @@ impl<M> TypedEncoded<M> {
     /// If `self` has already been initialized or is an initialized instance.
     pub fn try_initialize<T>(&mut self, value: &T) -> Result<()>
     where
-        T: scale::Encode + 'static,
+        T: Encode + 'static,
     {
         if let Some(id) = self.type_id {
             return Err(TypedEncodedError::AlreadyInitialized {
@@ -227,16 +240,22 @@ impl<M> TypedEncoded<M> {
     /// This effectively creates a clone of the encoded value.
     pub fn decode<T>(&self) -> Result<T>
     where
-        T: scale::Decode + 'static,
+        T: Decode + 'static,
     {
         self.check_enforced_type::<T>()?;
-        <T as scale::Decode>::decode(&mut &self.encoded[..]).map_err(Into::into)
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "old-codec")] {
+                <T as Decode>::decode(&mut &self.encoded[..]).ok_or(TypedEncodedError::Decode(crate::env::error::Error::from("Decode error")))
+            } else {
+                <T as Decode>::decode(&mut &self.encoded[..]).map_err(Into::into)
+            }
+        }
     }
 
     /// Assigns the given `T` to `self`.
     pub fn assign<T>(&mut self, value: &T) -> Result<()>
     where
-        T: scale::Encode + 'static,
+        T: Encode + 'static,
     {
         self.check_enforced_type::<T>()?;
         self.encoded.clear();
@@ -248,7 +267,7 @@ impl<M> TypedEncoded<M> {
     /// Evaluates the given clousure on the given typed encoded instances.
     pub fn eval<T, F, R>(&self, other: &Self, f: F) -> Result<R>
     where
-        T: scale::Decode + 'static,
+        T: Decode + 'static,
         F: FnOnce(&T, &T) -> R,
     {
         Self::check_matching_types(self, other)?;
@@ -261,7 +280,7 @@ impl<M> TypedEncoded<M> {
     /// and writes back the result into the typed encoded instance.
     pub fn eval_mut<T, F, R>(&mut self, other: &Self, f: F) -> Result<R>
     where
-        T: scale::Decode + scale::Encode + 'static,
+        T: Decode + Encode + 'static,
         F: FnOnce(&mut T, &T) -> R,
     {
         Self::check_matching_types(self, other)?;
@@ -269,7 +288,7 @@ impl<M> TypedEncoded<M> {
         let decoded_other = other.decode::<T>()?;
         let result = f(&mut decoded_self, &decoded_other);
         self.encoded.clear();
-        scale::Encode::encode_to(&decoded_self, &mut self.encoded);
+        Encode::encode_to(&decoded_self, &mut self.encoded);
         Ok(result)
     }
 
@@ -280,7 +299,7 @@ impl<M> TypedEncoded<M> {
     /// The equality check is performed on decoded instances.
     pub fn eq<T>(&self, other: &Self) -> Result<bool>
     where
-        T: PartialEq + scale::Decode + 'static,
+        T: PartialEq + Decode + 'static,
     {
         self.eval::<T, _, _>(other, |lhs, rhs| core::cmp::PartialEq::eq(lhs, rhs))
     }
@@ -292,7 +311,7 @@ impl<M> TypedEncoded<M> {
     /// The order relation is performed on the decoded instances.
     pub fn cmp<T>(&self, other: &Self) -> Result<Ordering>
     where
-        T: PartialOrd + Ord + scale::Decode + 'static,
+        T: PartialOrd + Ord + Decode + 'static,
     {
         self.eval::<T, _, _>(other, |lhs, rhs| core::cmp::Ord::cmp(lhs, rhs))
     }
@@ -300,7 +319,7 @@ impl<M> TypedEncoded<M> {
     /// Computes the hash of the decoded typed instance if types match.
     pub fn hash<T, H>(&self, state: &mut H) -> Result<()>
     where
-        T: scale::Decode + Hash + 'static,
+        T: Decode + Hash + 'static,
         H: Hasher,
     {
         self.decode::<T>()?.hash(state);

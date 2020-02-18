@@ -24,6 +24,17 @@ use crate::env::{
     Result,
 };
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Decode,
+    Encode,
+};
+
 /// Represents a return type.
 ///
 /// Used as a marker type to differentiate at compile-time between invoke and evaluate.
@@ -147,7 +158,7 @@ where
     /// Pushes an argument to the inputs of the call.
     pub fn push_arg<A>(mut self, arg: &A) -> Self
     where
-        A: scale::Encode,
+        A: Encode,
     {
         self.params.call_data.push_arg(arg);
         self
@@ -165,13 +176,13 @@ where
 impl<E, R, Seal> CallBuilder<E, ReturnType<R>, Seal>
 where
     E: EnvTypes,
-    R: scale::Decode,
+    R: Decode,
 {
     /// Fires the call to the remote smart contract.
     /// Returns the returned data back to the caller.
     pub fn fire(self) -> Result<R>
     where
-        R: scale::Decode,
+        R: Decode,
     {
         crate::env::eval_contract(&self.params)
     }

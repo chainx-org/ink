@@ -38,6 +38,21 @@ use type_metadata::{
     TypeId,
 };
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
+    Decode,
+    Encode,
+    Output,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Codec,
+    Decode,
+    Encode,
+    Output,
+};
+
 /// A chunk of synchronized cells.
 ///
 /// Provides mutable and read-optimized access to the associated contract storage slot.
@@ -68,7 +83,7 @@ impl<T> HasTypeDef for SyncChunk<T> {
 
 impl<T> Flush for SyncChunk<T>
 where
-    T: scale::Encode + Flush,
+    T: Encode + Flush,
 {
     #[inline]
     fn flush(&mut self) {
@@ -85,14 +100,24 @@ where
     }
 }
 
-impl<T> scale::Encode for SyncChunk<T> {
-    fn encode_to<W: scale::Output>(&self, dest: &mut W) {
+impl<T> Encode for SyncChunk<T> {
+    fn encode_to<W: Output>(&self, dest: &mut W) {
         self.chunk.encode_to(dest)
     }
 }
 
-impl<T> scale::Decode for SyncChunk<T> {
+impl<T> Decode for SyncChunk<T> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
+        TypedChunk::decode(input).map(|typed_chunk| {
+            Self {
+                chunk: typed_chunk,
+                cache: Default::default(),
+            }
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
         TypedChunk::decode(input).map(|typed_chunk| {
             Self {
                 chunk: typed_chunk,
@@ -144,7 +169,7 @@ impl<T> SyncChunk<T> {
 
 impl<T> SyncChunk<T>
 where
-    T: scale::Decode,
+    T: Decode,
 {
     /// Returns the value of the `n`-th cell if any.
     #[must_use]
@@ -185,7 +210,7 @@ where
 
 impl<T> SyncChunk<T>
 where
-    T: scale::Encode,
+    T: Encode,
 {
     /// Sets the value of the `n`-th cell.
     pub fn set(&mut self, n: u32, val: T) {
@@ -195,7 +220,7 @@ where
 
 impl<T> SyncChunk<T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     /// Replaces the value of the `n`-th cell and returns its old value if any.
     ///

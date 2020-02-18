@@ -141,9 +141,21 @@ impl CrossCalling<'_> {
     fn generate_storage(&self) -> TokenStream2 {
         let attrs = utils::filter_non_ink_attributes(&self.contract.storage.attrs);
 
+        #[cfg(feature = "old-codec")]
+        use old_scale::{
+            Decode,
+            Encode,
+        };
+        #[allow(unused)]
+        #[cfg(not(feature = "old-codec"))]
+        use scale::{
+            Decode,
+            Encode,
+        };
+
         quote! {
             #( #attrs )*
-            #[derive(Clone, Debug, scale::Encode, scale::Decode)]
+            #[derive(Clone, Debug, Encode, Decode)]
             #[cfg_attr(
                 feature = "ink-generate-abi",
                 derive(type_metadata::Metadata)

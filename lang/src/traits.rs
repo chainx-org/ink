@@ -22,6 +22,8 @@ use ink_core::{
         Flush,
     },
 };
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
 
 /// Dispatchable functions that have inputs.
 pub trait FnInput {

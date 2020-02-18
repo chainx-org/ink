@@ -18,6 +18,7 @@ include = ["Cargo.toml", "src/**/*.rs", "README.md", "LICENSE"]
 ink_primitives = { version = "2.0.0", path = "../../primitives/", default-features = false }
 
 scale = { package = "parity-scale-codec", version = "1.2", default-features = false, features = ["derive"] }
+old_scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive", "full"] }
 quote = "1"
 syn = { version = "1.0", features = ["parsing", "full", "extra-traits"] }
 proc-macro2 = "1.0"
@@ -62,3 +63,4 @@ std = [
 ink-generate-abi = [
     "std",
 ]
+old-codec = ["ink_primitives/old-codec"]

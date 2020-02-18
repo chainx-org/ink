@@ -19,7 +19,15 @@ use ink_abi::{
     LayoutStruct,
     StorageLayout,
 };
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
 use scale::{
+    Codec,
     Decode,
     Encode,
 };
@@ -100,7 +108,7 @@ where
 
 impl<T> Value<T>
 where
-    T: scale::Codec + Default,
+    T: Codec + Default,
 {
     /// Creates a new storage value initialized as its default value.
     ///
@@ -118,7 +126,7 @@ where
 
 impl<T> Value<T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     /// Returns an immutable reference to the wrapped value.
     pub fn get(&self) -> &T {
@@ -138,7 +146,7 @@ where
 
 impl<T> Value<T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     /// Mutates the wrapped value inplace by the given closure.
     ///
@@ -153,7 +161,7 @@ where
 
 impl<T, R> AsRef<R> for Value<T>
 where
-    T: AsRef<R> + scale::Codec,
+    T: AsRef<R> + Codec,
 {
     fn as_ref(&self) -> &R {
         self.get().as_ref()
@@ -162,7 +170,7 @@ where
 
 impl<T> core::ops::Deref for Value<T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     type Target = T;
 
@@ -173,7 +181,7 @@ where
 
 impl<T> core::ops::DerefMut for Value<T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.get_mut()
@@ -205,7 +213,7 @@ macro_rules! impl_ops_for_value {
 	) => {
 		impl<T> core::ops::$trait_name<T> for &Value<T>
 		where
-			T: core::ops::$trait_name<T> + Copy + scale::Codec,
+			T: core::ops::$trait_name<T> + Copy + Codec,
 		{
 			type Output = <T as core::ops::$trait_name>::Output;
 
@@ -216,7 +224,7 @@ macro_rules! impl_ops_for_value {
 
 		impl<T> core::ops::$trait_name for &Value<T>
 		where
-			T: core::ops::$trait_name<T> + Copy + scale::Codec,
+			T: core::ops::$trait_name<T> + Copy + Codec,
 		{
 			type Output = <T as core::ops::$trait_name>::Output;
 
@@ -227,7 +235,7 @@ macro_rules! impl_ops_for_value {
 
 		impl<T> core::ops::$trait_name_assign<T> for Value<T>
 		where
-			T: core::ops::$trait_name_assign<T> + scale::Codec,
+			T: core::ops::$trait_name_assign<T> + Codec,
 		{
 			fn $fn_name_assign(&mut self, rhs: T) {
 				self.mutate_with(|val| (*val) $tok_eq rhs);
@@ -236,7 +244,7 @@ macro_rules! impl_ops_for_value {
 
 		impl<T> core::ops::$trait_name_assign<&Self> for Value<T>
 		where
-			T: core::ops::$trait_name_assign<T> + Copy + scale::Codec,
+			T: core::ops::$trait_name_assign<T> + Copy + Codec,
 		{
 			fn $fn_name_assign(&mut self, rhs: &Value<T>) {
 				self.mutate_with(|val| (*val) $tok_eq *rhs.get());
@@ -257,7 +265,7 @@ impl_ops_for_value!(BitXor, bitxor, BitXorAssign, bitxor_assign; ^, ^=);
 
 impl<T> core::ops::Neg for &Value<T>
 where
-    T: core::ops::Neg + Copy + scale::Codec,
+    T: core::ops::Neg + Copy + Codec,
 {
     type Output = <T as core::ops::Neg>::Output;
 
@@ -268,7 +276,7 @@ where
 
 impl<T> core::ops::Not for &Value<T>
 where
-    T: core::ops::Not + Copy + scale::Codec,
+    T: core::ops::Not + Copy + Codec,
 {
     type Output = <T as core::ops::Not>::Output;
 
@@ -284,7 +292,7 @@ macro_rules! impl_shift_for_value {
 	) => {
 		impl<T, R> core::ops::$trait_name<R> for &Value<T>
 		where
-			T: core::ops::$trait_name<R> + Copy + scale::Codec,
+			T: core::ops::$trait_name<R> + Copy + Codec,
 		{
 			type Output = <T as core::ops::$trait_name<R>>::Output;
 
@@ -295,7 +303,7 @@ macro_rules! impl_shift_for_value {
 
 		impl<T, R> core::ops::$trait_name_assign<R> for Value<T>
 		where
-			T: core::ops::$trait_name_assign<R> + Copy + scale::Codec,
+			T: core::ops::$trait_name_assign<R> + Copy + Codec,
 		{
 			fn $fn_name_assign(&mut self, rhs: R) {
 				self.mutate_with(|value| (*value) $tok_eq rhs);
@@ -309,7 +317,7 @@ impl_shift_for_value!(Shr, shr, >>; ShrAssign, shr_assign, >>=);
 
 impl<T, I> core::ops::Index<I> for Value<T>
 where
-    T: core::ops::Index<I> + scale::Codec,
+    T: core::ops::Index<I> + Codec,
 {
     type Output = <T as core::ops::Index<I>>::Output;
 
@@ -320,7 +328,7 @@ where
 
 impl<T> PartialEq<T> for Value<T>
 where
-    T: PartialEq + scale::Codec,
+    T: PartialEq + Codec,
 {
     fn eq(&self, rhs: &T) -> bool {
         self.get().eq(rhs)
@@ -329,20 +337,20 @@ where
 
 impl<T> PartialEq for Value<T>
 where
-    T: PartialEq + scale::Codec,
+    T: PartialEq + Codec,
 {
     fn eq(&self, rhs: &Self) -> bool {
         self.get().eq(rhs.get())
     }
 }
 
-impl<T> Eq for Value<T> where T: Eq + scale::Codec {}
+impl<T> Eq for Value<T> where T: Eq + Codec {}
 
 use core::cmp::Ordering;
 
 impl<T> PartialOrd<T> for Value<T>
 where
-    T: PartialOrd + scale::Codec,
+    T: PartialOrd + Codec,
 {
     fn partial_cmp(&self, other: &T) -> Option<Ordering> {
         self.get().partial_cmp(other)
@@ -351,7 +359,7 @@ where
 
 impl<T> PartialOrd<Value<T>> for Value<T>
 where
-    T: PartialOrd + scale::Codec,
+    T: PartialOrd + Codec,
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.get().partial_cmp(other.get())
@@ -360,7 +368,7 @@ where
 
 impl<T> Ord for Value<T>
 where
-    T: Ord + scale::Codec,
+    T: Ord + Codec,
 {
     fn cmp(&self, other: &Self) -> Ordering {
         self.get().cmp(other.get())
@@ -369,7 +377,7 @@ where
 
 impl<T> core::hash::Hash for Value<T>
 where
-    T: core::hash::Hash + scale::Codec,
+    T: core::hash::Hash + Codec,
 {
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.get().hash(state)
@@ -378,7 +386,7 @@ where
 
 impl<T> core::fmt::Display for Value<T>
 where
-    T: core::fmt::Display + scale::Codec,
+    T: core::fmt::Display + Codec,
 {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         self.get().fmt(f)

@@ -1,3 +1,15 @@
+# ink! - ChainX's forked version of Parity's ink to write smart contracts
+
+This is a fork version of original [paritytech/ink](https://github.com/paritytech/ink) for developing smart conntract on ChainX chain.
+
+Main changes in [chainx-org/ink](https://github.com/chainx-org/ink):
+
+- Add `old-codec` feature to work with [ChainX](https://github.com/chainx-org/ChainX).- Add `DefaultXrmlTypes` to work with ChainX Runtime.
+- Add `DefaultXrmlTypes` to work with ChainX Runtime.
+- Add two examples [pcx_transfer](examples/pcx_transfer) and [xbtc_demo](examples/xbtc_demo) to play with PCX and XBTC of ChainX.
+
+----
+
 # ink! - Parity's ink to write smart contracts
 
 |       Linux        |       Codecov        |       Coveralls        |       LoC        |

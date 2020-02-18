@@ -20,6 +20,10 @@
 mod api;
 mod backend;
 pub mod call;
+#[cfg(feature = "old-codec")]
+pub mod chainx_calls;
+#[cfg(feature = "old-codec")]
+pub mod chainx_types;
 mod engine;
 mod error;
 mod types;
@@ -35,6 +39,8 @@ use self::backend::{
     Env,
     TypedEnv,
 };
+#[cfg(feature = "old-codec")]
+pub use self::chainx_types::DefaultXrmlTypes;
 pub use self::{
     api::*,
     error::{

@@ -27,10 +27,19 @@ use core::{
 };
 use derive_more::From;
 use ink_prelude::vec::Vec;
-use scale::{
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
     Decode,
     Encode,
 };
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Codec,
+    Decode,
+    Encode,
+};
+
 #[cfg(feature = "ink-generate-abi")]
 use type_metadata::Metadata;
 
@@ -129,18 +138,12 @@ impl<T> SimpleArithmetic for T where
 /// The environmental types usable by contracts defined with ink!.
 pub trait EnvTypes {
     /// The type of an address.
-    type AccountId: 'static + scale::Codec + Clone + PartialEq + Eq + Ord;
+    type AccountId: 'static + Codec + Clone + PartialEq + Eq + Ord;
     /// The type of balances.
-    type Balance: 'static
-        + scale::Codec
-        + Copy
-        + Clone
-        + PartialEq
-        + Eq
-        + SimpleArithmetic;
+    type Balance: 'static + Codec + Copy + Clone + PartialEq + Eq + SimpleArithmetic;
     /// The type of hash.
     type Hash: 'static
-        + scale::Codec
+        + Codec
         + Copy
         + Clone
         + Clear
@@ -150,23 +153,11 @@ pub trait EnvTypes {
         + AsRef<[u8]>
         + AsMut<[u8]>;
     /// The type of timestamps.
-    type Timestamp: 'static
-        + scale::Codec
-        + Copy
-        + Clone
-        + PartialEq
-        + Eq
-        + SimpleArithmetic;
+    type Timestamp: 'static + Codec + Copy + Clone + PartialEq + Eq + SimpleArithmetic;
     /// The type of block number.
-    type BlockNumber: 'static
-        + scale::Codec
-        + Copy
-        + Clone
-        + PartialEq
-        + Eq
-        + SimpleArithmetic;
+    type BlockNumber: 'static + Codec + Copy + Clone + PartialEq + Eq + SimpleArithmetic;
     /// The type of a call into the runtime
-    type Call: 'static + scale::Codec;
+    type Call: 'static + Codec;
 }
 
 /// Implemented by event types to communicate their topic hashes.
@@ -225,12 +216,21 @@ impl Encode for Call {
     }
 }
 
-impl scale::Decode for Call {
+impl Decode for Call {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(_value: &mut I) -> Result<Self, scale::Error> {
         // This implementation is only to satisfy the Decode constraint in the
         // test environment. Since Call cannot be constructed then just return
         // None, but this should never be called.
         Err("The default `Call` type cannot be used for runtime calls".into())
+    }
+
+    #[cfg(feature = "old-codec")]
+    fn decode<I: old_scale::Input>(_value: &mut I) -> Option<Self> {
+        // This implementation is only to satisfy the Decode constraint in the
+        // test environment. Since Call cannot be constructed then just return
+        // None, but this should never be called.
+        None
     }
 }
 

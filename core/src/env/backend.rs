@@ -24,13 +24,23 @@ use crate::env::{
     Topics,
 };
 use ink_primitives::Key;
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Decode,
+    Encode,
+};
 
 /// Environmental contract functionality that does not require `EnvTypes`.
 pub trait Env {
     /// Writes the value to the contract storage under the given key.
     fn set_contract_storage<V>(&mut self, key: Key, value: &V)
     where
-        V: scale::Encode;
+        V: Encode;
 
     /// Returns the value stored under the given key in the contract's storage if any.
     ///
@@ -39,7 +49,7 @@ pub trait Env {
     /// - If the decoding of the typed value failed
     fn get_contract_storage<R>(&mut self, key: Key) -> Option<Result<R>>
     where
-        R: scale::Decode;
+        R: Decode;
 
     /// Clears the contract's storage key entry.
     fn clear_contract_storage(&mut self, key: Key);
@@ -51,7 +61,7 @@ pub trait Env {
     /// - If the decoding of the typed value failed
     fn get_runtime_storage<R>(&mut self, runtime_key: &[u8]) -> Option<Result<R>>
     where
-        R: scale::Decode;
+        R: Decode;
 
     /// Returns the input to the executed contract.
     ///
@@ -73,7 +83,7 @@ pub trait Env {
     /// The environment access asserts this guarantee.
     fn output<R>(&mut self, return_value: &R)
     where
-        R: scale::Encode;
+        R: Encode;
 
     /// Prints the given contents to the console log.
     fn println(&mut self, content: &str);
@@ -166,7 +176,7 @@ pub trait TypedEnv: Env {
     fn emit_event<T, Event>(&mut self, event: Event)
     where
         T: EnvTypes,
-        Event: Topics<T> + scale::Encode;
+        Event: Topics<T> + Encode;
 
     /// Sets the rent allowance of the executed contract to the new value.
     ///
@@ -206,7 +216,7 @@ pub trait TypedEnv: Env {
     ) -> Result<R>
     where
         T: EnvTypes,
-        R: scale::Decode;
+        R: Decode;
 
     /// Instantiates another contract.
     ///

@@ -23,6 +23,11 @@ use crate::env::{
     Result,
 };
 
+#[cfg(feature = "old-codec")]
+use old_scale::Encode;
+#[cfg(not(feature = "old-codec"))]
+use scale::Encode;
+
 pub mod state {
     pub use crate::env::call::state::{
         Sealed,
@@ -172,7 +177,7 @@ where
     /// Pushes an argument to the inputs of the call.
     pub fn push_arg<A>(mut self, arg: &A) -> Self
     where
-        A: scale::Encode,
+        A: Encode,
     {
         self.params.call_data.push_arg(arg);
         self

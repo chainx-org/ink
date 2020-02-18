@@ -33,9 +33,19 @@ use ink_abi::{
     StorageLayout,
 };
 use ink_primitives::Key;
-use scale::{
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
     Decode,
     Encode,
+    Output,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Codec,
+    Decode,
+    Encode,
+    Output,
 };
 #[cfg(feature = "ink-generate-abi")]
 use type_metadata::Metadata;
@@ -140,7 +150,7 @@ where
 
 impl<'a, T> Iterator for Values<'a, T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     type Item = &'a T;
 
@@ -154,11 +164,11 @@ where
     }
 }
 
-impl<'a, T> ExactSizeIterator for Values<'a, T> where T: scale::Codec {}
+impl<'a, T> ExactSizeIterator for Values<'a, T> where T: Codec {}
 
 impl<'a, T> DoubleEndedIterator for Values<'a, T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         self.iter.next_back().map(|(_index, value)| value)
@@ -195,7 +205,7 @@ impl<'a, T> Iter<'a, T> {
 
 impl<'a, T> Iterator for Iter<'a, T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     type Item = (u32, &'a T);
 
@@ -221,11 +231,11 @@ where
     }
 }
 
-impl<'a, T> ExactSizeIterator for Iter<'a, T> where T: scale::Codec {}
+impl<'a, T> ExactSizeIterator for Iter<'a, T> where T: Codec {}
 
 impl<'a, T> DoubleEndedIterator for Iter<'a, T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         debug_assert!(self.begin <= self.end);
@@ -270,17 +280,24 @@ where
 }
 
 impl<T> Encode for Stash<T> {
-    fn encode_to<W: scale::Output>(&self, dest: &mut W) {
+    fn encode_to<W: Output>(&self, dest: &mut W) {
         self.header.encode_to(dest);
         self.entries.encode_to(dest);
     }
 }
 
 impl<T> Decode for Stash<T> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let header = storage::Value::decode(input)?;
         let entries = SyncChunk::decode(input)?;
         Ok(Self { header, entries })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
+        let header = storage::Value::decode(input)?;
+        let entries = SyncChunk::decode(input)?;
+        Some(Self { header, entries })
     }
 }
 
@@ -372,7 +389,7 @@ impl<T> Stash<T> {
 
 impl<T> Stash<T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     /// Returns the element stored at index `n` if any.
     pub fn get(&self, n: u32) -> Option<&T> {

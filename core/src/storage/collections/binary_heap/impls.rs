@@ -24,10 +24,19 @@ use ink_abi::{
     LayoutStruct,
     StorageLayout,
 };
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
+    Decode,
+    Encode,
+    Output,
+};
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Codec,
     Decode,
     Encode,
+    Output,
 };
 #[cfg(feature = "ink-generate-abi")]
 use type_metadata::Metadata;
@@ -73,7 +82,7 @@ impl<'a, T> Values<'a, T> {
     /// Creates a new iterator for the given storage heap.
     pub(crate) fn new(heap: &'a BinaryHeap<T>) -> Self
     where
-        T: scale::Codec + Ord,
+        T: Codec + Ord,
     {
         Self { iter: heap.iter() }
     }
@@ -216,7 +225,7 @@ where
 }
 
 impl<T> Encode for BinaryHeap<T> {
-    fn encode_to<W: scale::Output>(&self, dest: &mut W) {
+    fn encode_to<W: Output>(&self, dest: &mut W) {
         self.len.encode_to(dest);
         self.entries.encode_to(dest);
     }
@@ -226,10 +235,20 @@ impl<T> Decode for BinaryHeap<T>
 where
     T: Codec,
 {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let len = storage::Value::decode(input)?;
         let entries = SyncChunk::decode(input)?;
         Ok(Self {
+            len,
+            entries: DuplexSyncChunk::new(entries),
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
+        let len = storage::Value::decode(input)?;
+        let entries = SyncChunk::decode(input)?;
+        Some(Self {
             len,
             entries: DuplexSyncChunk::new(entries),
         })

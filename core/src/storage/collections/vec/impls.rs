@@ -161,7 +161,7 @@ where
 
 impl<T> Extend<T> for Vec<T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     fn extend<I>(&mut self, iter: I)
     where
@@ -175,7 +175,7 @@ where
 
 impl<'a, T> Extend<&'a T> for Vec<T>
 where
-    T: scale::Codec + Copy + 'a,
+    T: Codec + Copy + 'a,
 {
     fn extend<I>(&mut self, iter: I)
     where

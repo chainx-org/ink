@@ -57,6 +57,15 @@ use ink_abi::{
     LayoutStruct,
     StorageLayout,
 };
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Codec,
     Decode,
@@ -236,11 +245,23 @@ impl<K, V> Encode for BTreeMap<K, V> {
 }
 
 impl<K, V> Decode for BTreeMap<K, V> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let header = storage::Value::decode(input)?;
         let entries = SyncChunk::decode(input)?;
         let kv_pairs = SyncChunk::decode(input)?;
         Ok(Self {
+            header,
+            nodes: entries,
+            kv_pairs,
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: scale::Input>(input: &mut I) -> Option<Self> {
+        let header = storage::Value::decode(input)?;
+        let entries = SyncChunk::decode(input)?;
+        let kv_pairs = SyncChunk::decode(input)?;
+        Some(Self {
             header,
             nodes: entries,
             kv_pairs,

@@ -23,6 +23,7 @@ ink_lang_macro = { version = "2.0.0", path = "macro", default-features = false }
 
 scale = { package = "parity-scale-codec", version = "1.2", default-features = false, features = ["derive", "full"] }
 derive_more = { version = "0.99", default-features = false, features = ["from"] }
+old_scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive", "full"] }
 
 [features]
 default = ["test-env"]
@@ -43,3 +44,4 @@ ink-generate-abi = [
     "ink_abi",
     "ink_core/ink-generate-abi",
 ]
+old-codec = ["ink_primitives/old-codec", "ink_core/old-codec"]

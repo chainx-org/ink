@@ -22,6 +22,7 @@ ink_core_derive = { version = "2.1.0", path = "derive", default-features = false
 ink_prelude = { version = "2.1.0", path = "../prelude/", default-features = false }
 
 scale = { package = "parity-scale-codec", version = "1.3", default-features = false, features = ["derive", "full"] }
+old_scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive", "full"] }
 derive_more = { version = "0.99", default-features = false, features = ["from", "display"] }
 smallvec = { version = "1.2", default-features = false, features = ["union"] }
 cfg-if = "0.1"
@@ -73,3 +74,4 @@ ink-generate-abi = [
     "type-metadata",
     "std",
 ]
+old-codec = ["ink_primitives/old-codec"]

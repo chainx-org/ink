@@ -18,6 +18,17 @@ use ink_prelude::{
     vec::Vec,
 };
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Decode,
+    Encode,
+};
+
 /// Runtime storage.
 ///
 /// More generically a mapping from bytes to bytes.
@@ -42,7 +53,7 @@ impl RuntimeStorage {
     /// Stores the value under the given key.
     pub fn store<T>(&mut self, key: Vec<u8>, value: T)
     where
-        T: scale::Encode,
+        T: Encode,
     {
         self.entries.insert(key, value.encode());
     }
@@ -50,10 +61,18 @@ impl RuntimeStorage {
     /// Loads the value under the given key if any.
     pub fn load<T>(&self, key: &[u8]) -> Option<Result<T>>
     where
-        T: scale::Decode,
+        T: Decode,
     {
-        self.entries.get(key).map(|encoded| {
-            <T as scale::Decode>::decode(&mut &encoded[..]).map_err(Into::into)
-        })
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "old-codec")] {
+                self.entries.get(key).map(|encoded| {
+                    <T as old_scale::Decode>::decode(&mut &encoded[..]).ok_or(crate::env::error::Error::from("Decode error").into())
+                })
+            } else {
+                self.entries.get(key).map(|encoded| {
+                    <T as scale::Decode>::decode(&mut &encoded[..]).map_err(Into::into)
+                })
+            }
+        }
     }
 }

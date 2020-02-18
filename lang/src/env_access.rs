@@ -26,6 +26,8 @@ use ink_core::{
     },
 };
 use ink_primitives::Key;
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
 
 /// Allows to directly access the environment mutably.
 ///

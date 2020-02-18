@@ -13,6 +13,12 @@
 // limitations under the License.
 
 use crate::byte_utils;
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
 use scale::{
     Decode,
     Encode,

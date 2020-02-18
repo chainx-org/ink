@@ -40,6 +40,21 @@ use type_metadata::{
     TypeId,
 };
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
+    Decode,
+    Encode,
+    Output,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Codec,
+    Decode,
+    Encode,
+    Output,
+};
+
 /// A synchronized cell.
 ///
 /// Provides interpreted, read-optimized and inplace-mutable
@@ -316,14 +331,24 @@ where
     }
 }
 
-impl<T> scale::Encode for SyncCell<T> {
-    fn encode_to<W: scale::Output>(&self, dest: &mut W) {
+impl<T> Encode for SyncCell<T> {
+    fn encode_to<W: Output>(&self, dest: &mut W) {
         self.cell.encode_to(dest)
     }
 }
 
-impl<T> scale::Decode for SyncCell<T> {
+impl<T> Decode for SyncCell<T> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
+        TypedCell::decode(input).map(|typed_cell| {
+            Self {
+                cell: typed_cell,
+                cache: Cache::default(),
+            }
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
         TypedCell::decode(input).map(|typed_cell| {
             Self {
                 cell: typed_cell,
@@ -335,7 +360,7 @@ impl<T> scale::Decode for SyncCell<T> {
 
 impl<T> Flush for SyncCell<T>
 where
-    T: scale::Encode + Flush,
+    T: Encode + Flush,
 {
     #[inline]
     fn flush(&mut self) {
@@ -380,7 +405,7 @@ impl<T> SyncCell<T> {
 
 impl<T> SyncCell<T>
 where
-    T: scale::Decode,
+    T: Decode,
 {
     /// Returns an immutable reference to the value of the cell.
     pub fn get(&self) -> Option<&T> {
@@ -394,7 +419,7 @@ where
 
 impl<T> SyncCell<T>
 where
-    T: scale::Encode,
+    T: Encode,
 {
     /// Sets the value of the cell.
     pub fn set(&mut self, val: T) {
@@ -405,7 +430,7 @@ where
 
 impl<T> SyncCell<T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     /// Returns a mutable reference to the value of the cell.
     pub fn get_mut(&mut self) -> Option<&mut T> {

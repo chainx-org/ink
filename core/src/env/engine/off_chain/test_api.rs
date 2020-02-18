@@ -28,6 +28,11 @@ use crate::env::{
 };
 use ink_prelude::string::String;
 
+#[cfg(feature = "old-codec")]
+use old_scale::Encode;
+#[cfg(not(feature = "old-codec"))]
+use scale::Encode;
+
 /// Pushes a contract execution context.
 ///
 /// This is the data behind a single instance of a contract call.
@@ -177,7 +182,7 @@ where
 /// Sets the runtime storage to value for the given key.
 pub fn set_runtime_storage<T>(key: &[u8], value: T)
 where
-    T: scale::Encode,
+    T: Encode,
 {
     <EnvInstance as OnInstance>::on_instance(|instance| {
         instance.runtime_storage.store(key.to_vec(), value)

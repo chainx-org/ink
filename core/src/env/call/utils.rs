@@ -17,6 +17,18 @@ use ink_prelude::{
     vec,
     vec::Vec,
 };
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+    Output,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Decode,
+    Encode,
+    Output,
+};
 
 /// Seals to guard pushing arguments to already satisfied parameter builders.
 pub mod seal {
@@ -27,7 +39,7 @@ pub mod seal {
 }
 
 /// The function selector.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, From, scale::Decode, scale::Encode)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, From, Decode, Encode)]
 pub struct Selector {
     /// The 4 underlying bytes.
     bytes: [u8; 4],
@@ -92,7 +104,7 @@ impl CallData {
     /// Pushes the given argument onto the call ABI data in encoded form.
     pub fn push_arg<A>(&mut self, arg: &A)
     where
-        A: scale::Encode,
+        A: Encode,
     {
         arg.encode_to(&mut self.bytes)
     }
@@ -116,17 +128,19 @@ impl CallData {
     }
 }
 
-impl scale::Encode for CallData {
+impl Encode for CallData {
+    #[cfg(not(feature = "old-codec"))]
     fn size_hint(&self) -> usize {
         self.bytes.len()
     }
 
-    fn encode_to<T: scale::Output>(&self, dest: &mut T) {
+    fn encode_to<T: Output>(&self, dest: &mut T) {
         dest.write(self.bytes.as_slice());
     }
 }
 
-impl scale::Decode for CallData {
+impl Decode for CallData {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(
         input: &mut I,
     ) -> core::result::Result<Self, scale::Error> {
@@ -141,5 +155,16 @@ impl scale::Decode for CallData {
             ))
         }
         Ok(Self { bytes })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
+        let mut bytes = Vec::new();
+        while let Some(byte) = input.read_byte() {
+            bytes.push(byte);
+        }
+        if bytes.len() < 4 {
+            return None
+        }
+        Some(Self { bytes })
     }
 }

@@ -30,6 +30,8 @@ use ink_core::{
     },
     storage::Flush,
 };
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
 
 /// Results of message handling operations.
 pub type Result<T> = core::result::Result<T, DispatchError>;
@@ -208,9 +210,16 @@ macro_rules! impl_dispatcher_for {
             where
                 T: EnvTypes,
             {
+                #[cfg(not(feature = "old-codec"))]
                 use scale::Decode as _;
+                #[cfg(feature = "old-codec")]
+                use old_scale::Decode as _;
+                #[cfg(not(feature = "old-codec"))]
                 let args = <Msg as FnInput>::Input::decode(&mut &data.params()[..])
                     .map_err(|_| DispatchError::InvalidParameters)?;
+                #[cfg(feature = "old-codec")]
+                let args = <Msg as FnInput>::Input::decode(&mut &data.params()[..])
+                    .ok_or(DispatchError::InvalidParameters)?;
                 let result = self.eval(storage, args);
                 if TypeId::of::<<Msg as FnOutput>::Output>() != TypeId::of::<()>() {
                     ink_core::env::output::<<Msg as FnOutput>::Output>(&result)

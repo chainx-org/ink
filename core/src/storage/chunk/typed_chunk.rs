@@ -22,6 +22,9 @@ use crate::{
 use core::marker::PhantomData;
 use ink_primitives::Key;
 
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
+
 /// A chunk of typed cells.
 ///
 /// Provides interpreted access with offset to the associated contract storage slot.
@@ -120,8 +123,16 @@ impl<T> scale::Encode for TypedChunk<T> {
 }
 
 impl<T> scale::Decode for TypedChunk<T> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         Ok(Self {
+            key: Key::decode(input)?,
+            marker: Default::default(),
+        })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
+        Some(Self {
             key: Key::decode(input)?,
             marker: Default::default(),
         })

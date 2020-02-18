@@ -135,6 +135,13 @@ impl EventHelpers<'_> {
             .collect::<Vec<_>>();
 
         quote! {
+            #[cfg(feature = "old-codec")]
+            #[derive(old_scale::Encode, old_scale::Decode)]
+            pub enum Event {
+                #( #event_idents(#event_idents), )*
+            }
+
+            #[cfg(not(feature = "old-codec"))]
             #[derive(scale::Encode, scale::Decode)]
             pub enum Event {
                 #( #event_idents(#event_idents), )*
@@ -220,6 +227,16 @@ impl EventStructs<'_> {
                     .retain(|attr| !ir::utils::is_ink_attribute(attr))
             });
 
+            #[cfg(feature = "old-codec")]
+            quote_spanned!(span =>
+                #conflic_depedency_cfg
+                #(#attrs)*
+                #[derive(old_scale::Encode, old_scale::Decode)]
+                pub struct #ident
+                    #fields
+            )
+
+            #[cfg(not(feature = "old-codec"))]
             quote_spanned!(span =>
                 #conflic_depedency_cfg
                 #(#attrs)*
@@ -228,6 +245,7 @@ impl EventStructs<'_> {
                     #fields
             )
         })
+
     }
 }
 

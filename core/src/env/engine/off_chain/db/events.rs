@@ -17,6 +17,8 @@ use crate::env::{
     EnvTypes,
     Topics,
 };
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
 
 /// Record for an emitted event.
 #[derive(Debug, Clone)]

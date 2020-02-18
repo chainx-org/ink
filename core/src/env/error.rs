@@ -17,11 +17,70 @@ use derive_more::From;
 #[cfg(any(feature = "std", test, doc))]
 use crate::env::engine::off_chain::OffChainError;
 
+/// Descriptive error type
+#[cfg(feature = "std")]
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub struct Error(&'static str);
+
+/// Undescriptive error type when compiled for no std
+#[cfg(not(feature = "std"))]
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub struct Error;
+
+impl Error {
+    #[cfg(feature = "std")]
+    /// Error description
+    ///
+    /// This function returns an actual error str when running in `std`
+    /// environment, but `""` on `no_std`.
+    pub fn what(&self) -> &'static str {
+        self.0
+    }
+
+    #[cfg(not(feature = "std"))]
+    /// Error description
+    ///
+    /// This function returns an actual error str when running in `std`
+    /// environment, but `""` on `no_std`.
+    pub fn what(&self) -> &'static str {
+        ""
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for Error {
+    fn description(&self) -> &str {
+        self.0
+    }
+}
+
+impl From<&'static str> for Error {
+    #[cfg(feature = "std")]
+    fn from(s: &'static str) -> Error {
+        Error(s)
+    }
+
+    #[cfg(not(feature = "std"))]
+    fn from(_s: &'static str) -> Error {
+        Error
+    }
+}
+
 /// Errors that can be encountered upon environmental interaction.
 #[derive(Debug, From, PartialEq, Eq)]
 pub enum EnvError {
     /// Error upon decoding an encoded value.
+    #[cfg(not(feature = "old-codec"))]
     Decode(scale::Error),
+    #[cfg(feature = "old-codec")]
+    Decode(Error),
     /// An error that can only occure in the off-chain environment.
     #[cfg(any(feature = "std", test, doc))]
     OffChain(OffChainError),

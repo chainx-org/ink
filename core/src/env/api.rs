@@ -34,6 +34,16 @@ use crate::env::{
     Topics,
 };
 use ink_primitives::Key;
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Decode,
+    Encode,
+};
 
 /// Returns the address of the caller of the executed contract.
 ///
@@ -191,7 +201,7 @@ where
 pub fn emit_event<T, Event>(event: Event)
 where
     T: EnvTypes,
-    Event: Topics<T> + scale::Encode,
+    Event: Topics<T> + Encode,
 {
     <EnvInstance as OnInstance>::on_instance(|instance| {
         TypedEnv::emit_event::<T, Event>(instance, event)
@@ -211,7 +221,7 @@ where
 /// Writes the value to the contract storage under the given key.
 pub fn set_contract_storage<V>(key: Key, value: &V)
 where
-    V: scale::Encode,
+    V: Encode,
 {
     <EnvInstance as OnInstance>::on_instance(|instance| {
         Env::set_contract_storage::<V>(instance, key, value)
@@ -225,7 +235,7 @@ where
 /// - If the decoding of the typed value failed
 pub fn get_contract_storage<R>(key: Key) -> Option<Result<R>>
 where
-    R: scale::Decode,
+    R: Decode,
 {
     <EnvInstance as OnInstance>::on_instance(|instance| {
         Env::get_contract_storage::<R>(instance, key)
@@ -301,7 +311,7 @@ where
 pub fn eval_contract<T, R>(params: &CallParams<T, ReturnType<R>>) -> Result<R>
 where
     T: EnvTypes,
-    R: scale::Decode,
+    R: Decode,
 {
     <EnvInstance as OnInstance>::on_instance(|instance| {
         TypedEnv::eval_contract::<T, R>(instance, params)
@@ -423,7 +433,7 @@ pub fn input() -> Result<CallData> {
 /// environment for every contract execution.
 pub fn output<R>(return_value: &R)
 where
-    R: scale::Encode,
+    R: Encode,
 {
     <EnvInstance as OnInstance>::on_instance(|instance| {
         Env::output::<R>(instance, return_value)
@@ -461,7 +471,7 @@ pub fn println(content: &str) {
 /// - If the decoding of the typed value failed
 pub fn get_runtime_storage<R>(runtime_key: &[u8]) -> Option<Result<R>>
 where
-    R: scale::Decode,
+    R: Decode,
 {
     <EnvInstance as OnInstance>::on_instance(|instance| {
         Env::get_runtime_storage::<R>(instance, runtime_key)

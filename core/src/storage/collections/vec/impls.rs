@@ -27,6 +27,21 @@ use ink_abi::{
 #[cfg(feature = "ink-generate-abi")]
 use type_metadata::Metadata;
 
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Codec,
+    Decode,
+    Encode,
+    Output,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Codec,
+    Decode,
+    Encode,
+    Output,
+};
+
 use crate::storage::{
     self,
     alloc::{
@@ -85,7 +100,7 @@ impl<'a, T> Iter<'a, T> {
 
 impl<T> Flush for Vec<T>
 where
-    T: scale::Encode + Flush,
+    T: Encode + Flush,
 {
     fn flush(&mut self) {
         self.len.flush();
@@ -112,7 +127,7 @@ where
 
 impl<'a, T> Iterator for Iter<'a, T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     type Item = &'a T;
 
@@ -132,11 +147,11 @@ where
     }
 }
 
-impl<'a, T> ExactSizeIterator for Iter<'a, T> where T: scale::Codec {}
+impl<'a, T> ExactSizeIterator for Iter<'a, T> where T: Codec {}
 
 impl<'a, T> DoubleEndedIterator for Iter<'a, T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         debug_assert!(self.begin <= self.end);
@@ -149,18 +164,25 @@ where
     }
 }
 
-impl<T> scale::Encode for Vec<T> {
-    fn encode_to<W: scale::Output>(&self, dest: &mut W) {
+impl<T> Encode for Vec<T> {
+    fn encode_to<W: Output>(&self, dest: &mut W) {
         self.len.encode_to(dest);
         self.cells.encode_to(dest);
     }
 }
 
-impl<T> scale::Decode for Vec<T> {
+impl<T> Decode for Vec<T> {
+    #[cfg(not(feature = "old-codec"))]
     fn decode<I: scale::Input>(input: &mut I) -> Result<Self, scale::Error> {
         let len = storage::Value::decode(input)?;
         let cells = SyncChunk::decode(input)?;
         Ok(Self { len, cells })
+    }
+    #[cfg(feature = "old-codec")]
+    fn decode<I: old_scale::Input>(input: &mut I) -> Option<Self> {
+        let len = storage::Value::decode(input)?;
+        let cells = SyncChunk::decode(input)?;
+        Some(Self { len, cells })
     }
 }
 
@@ -205,7 +227,7 @@ impl<T> Vec<T> {
 
 impl<T> Vec<T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     /// Returns the given `n` if it is witihn bounds, otherwise `None`.
     fn within_bounds(&self, n: u32) -> Option<u32> {
@@ -356,7 +378,7 @@ where
 
 impl<T> core::ops::Index<u32> for Vec<T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     type Output = T;
 
@@ -370,7 +392,7 @@ where
 
 impl<T> core::ops::IndexMut<u32> for Vec<T>
 where
-    T: scale::Codec,
+    T: Codec,
 {
     fn index_mut(&mut self, index: u32) -> &mut Self::Output {
         self.get_mut(index).expect(

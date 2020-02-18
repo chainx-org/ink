@@ -16,6 +16,12 @@ use super::{
     Account,
     EnvInstance,
 };
+
+#[cfg(feature = "old-codec")]
+use crate::env::error::Error;
+#[cfg(not(feature = "old-codec"))]
+use scale::Error;
+
 use crate::env::{
     call::{
         CallData,
@@ -30,6 +36,9 @@ use crate::env::{
     TypedEnv,
 };
 use ink_primitives::Key;
+
+#[cfg(feature = "old-codec")]
+use old_scale as scale;
 
 impl EnvInstance {
     /// Returns the callee account.
@@ -93,7 +102,7 @@ impl Env for EnvInstance {
         self.exec_context()
             .map(|exec_ctx| &exec_ctx.call_data)
             .map(Clone::clone)
-            .map_err(|_| scale::Error::from("could not decode input call data"))
+            .map_err(|_| Error::from("could not decode input call data"))
             .map_err(Into::into)
     }
 
@@ -117,7 +126,7 @@ impl TypedEnv for EnvInstance {
         self.exec_context()
             .expect("uninitialized execution context")
             .caller::<T>()
-            .map_err(|_| scale::Error::from("could not decode caller"))
+            .map_err(|_| Error::from("could not decode caller"))
             .map_err(Into::into)
     }
 
@@ -125,14 +134,14 @@ impl TypedEnv for EnvInstance {
         self.exec_context()
             .expect("uninitialized execution context")
             .transferred_value::<T>()
-            .map_err(|_| scale::Error::from("could not decode transferred balance"))
+            .map_err(|_| Error::from("could not decode transferred balance"))
             .map_err(Into::into)
     }
 
     fn gas_price<T: EnvTypes>(&mut self) -> Result<T::Balance> {
         self.chain_spec
             .gas_price::<T>()
-            .map_err(|_| scale::Error::from("could not decode gas price"))
+            .map_err(|_| Error::from("could not decode gas price"))
             .map_err(Into::into)
     }
 
@@ -140,7 +149,7 @@ impl TypedEnv for EnvInstance {
         self.exec_context()
             .expect("uninitialized execution context")
             .gas::<T>()
-            .map_err(|_| scale::Error::from("could not decode gas left"))
+            .map_err(|_| Error::from("could not decode gas left"))
             .map_err(Into::into)
     }
 
@@ -148,7 +157,7 @@ impl TypedEnv for EnvInstance {
         self.current_block()
             .expect("uninitialized execution context")
             .timestamp::<T>()
-            .map_err(|_| scale::Error::from("could not decode block time"))
+            .map_err(|_| Error::from("could not decode block time"))
             .map_err(Into::into)
     }
 
@@ -156,21 +165,21 @@ impl TypedEnv for EnvInstance {
         self.exec_context()
             .expect("uninitialized execution context")
             .callee::<T>()
-            .map_err(|_| scale::Error::from("could not decode callee"))
+            .map_err(|_| Error::from("could not decode callee"))
             .map_err(Into::into)
     }
 
     fn balance<T: EnvTypes>(&mut self) -> Result<T::Balance> {
         self.callee_account()
             .balance::<T>()
-            .map_err(|_| scale::Error::from("could not decode callee balance"))
+            .map_err(|_| Error::from("could not decode callee balance"))
             .map_err(Into::into)
     }
 
     fn rent_allowance<T: EnvTypes>(&mut self) -> Result<T::Balance> {
         self.callee_account()
             .rent_allowance::<T>()
-            .map_err(|_| scale::Error::from("could not decode callee rent allowance"))
+            .map_err(|_| Error::from("could not decode callee rent allowance"))
             .map_err(Into::into)
     }
 
@@ -178,21 +187,21 @@ impl TypedEnv for EnvInstance {
         self.current_block()
             .expect("uninitialized execution context")
             .number::<T>()
-            .map_err(|_| scale::Error::from("could not decode block number"))
+            .map_err(|_| Error::from("could not decode block number"))
             .map_err(Into::into)
     }
 
     fn minimum_balance<T: EnvTypes>(&mut self) -> Result<T::Balance> {
         self.chain_spec
             .minimum_balance::<T>()
-            .map_err(|_| scale::Error::from("could not decode minimum balance"))
+            .map_err(|_| Error::from("could not decode minimum balance"))
             .map_err(Into::into)
     }
 
     fn tombstone_deposit<T: EnvTypes>(&mut self) -> Result<T::Balance> {
         self.chain_spec
             .tombstone_deposit::<T>()
-            .map_err(|_| scale::Error::from("could not decode tombstone deposit"))
+            .map_err(|_| Error::from("could not decode tombstone deposit"))
             .map_err(Into::into)
     }
 

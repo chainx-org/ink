@@ -28,6 +28,16 @@ use core::cell::Cell;
 use derive_more::From;
 use ink_prelude::collections::BTreeMap;
 use ink_primitives::Key;
+#[cfg(feature = "old-codec")]
+use old_scale::{
+    Decode,
+    Encode,
+};
+#[cfg(not(feature = "old-codec"))]
+use scale::{
+    Decode,
+    Encode,
+};
 
 /// Errors encountered upon interacting with the accounts database.
 #[derive(Debug, From, PartialEq, Eq)]
@@ -55,8 +65,16 @@ impl AccountError {
     }
 }
 
+#[cfg(not(feature = "old-codec"))]
 impl From<scale::Error> for AccountError {
     fn from(err: scale::Error) -> Self {
+        AccountError::TypedEncoded(err.into())
+    }
+}
+
+#[cfg(feature = "old-codec")]
+impl From<crate::env::error::Error> for AccountError {
+    fn from(err: crate::env::error::Error) -> Self {
         AccountError::TypedEncoded(err.into())
     }
 }
@@ -210,7 +228,7 @@ impl Account {
     /// Sets the contract storage of key to the new value.
     pub fn set_storage<T>(&mut self, at: Key, new_value: &T) -> Result<()>
     where
-        T: scale::Encode,
+        T: Encode,
     {
         self.contract_or_err_mut()
             .map(|contract| contract.storage.set_storage::<T>(at, new_value))
@@ -225,7 +243,7 @@ impl Account {
     /// Returns the value stored in the contract storage at the given key.
     pub fn get_storage<T>(&self, at: Key) -> Option<Result<T>>
     where
-        T: scale::Decode,
+        T: Decode,
     {
         self.contract_or_err()
             .and_then(|contract| contract.storage.get_storage::<T>(at))
@@ -300,20 +318,29 @@ impl ContractStorage {
     /// Returns the decoded storage at the key if any.
     pub fn get_storage<T>(&self, at: Key) -> Result<Option<T>>
     where
-        T: scale::Decode,
+        T: Decode,
     {
         self.count_reads.set(self.count_reads.get() + 1);
-        self.entries
-            .get(&at)
-            .map(|encoded| T::decode(&mut &encoded[..]))
-            .transpose()
-            .map_err(Into::into)
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "old-codec")] {
+                self.entries
+                    .get(&at)
+                    .map(|encoded| T::decode(&mut &encoded[..]))
+                    .ok_or(AccountError::TypedEncoded(crate::env::error::Error::from("Decode error").into()))
+            } else {
+                self.entries
+                    .get(&at)
+                    .map(|encoded| T::decode(&mut &encoded[..]))
+                    .transpose()
+                    .map_err(Into::into)
+            }
+        }
     }
 
     /// Writes the encoded value into the contract storage at the given key.
     pub fn set_storage<T>(&mut self, at: Key, new_value: &T)
     where
-        T: scale::Encode,
+        T: Encode,
     {
         self.count_writes += 1;
         self.entries.insert(at, new_value.encode());

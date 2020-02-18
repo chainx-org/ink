@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(feature = "old-codec")]
+use old_scale::Output;
+#[cfg(not(feature = "old-codec"))]
+use scale::Output;
+
 /// A static buffer with 16kB of capacity.
 pub struct StaticBuffer {
     /// The static buffer with a total capacity of 16kB.
@@ -56,7 +61,7 @@ impl StaticBuffer {
     }
 }
 
-impl scale::Output for StaticBuffer {
+impl Output for StaticBuffer {
     fn write(&mut self, bytes: &[u8]) {
         if self.len + bytes.len() > Self::CAPACITY {
             panic!("static buffer overflowed")

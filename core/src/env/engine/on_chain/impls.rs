@@ -78,10 +78,14 @@ impl EnvInstance {
         T: Decode,
     {
         let req_len = self.read_scratch_buffer();
-        #[cfg(not(feature = "old-codec"))]
-        scale::Decode::decode(&mut &self.buffer[0..req_len]).map_err(Into::into)
-        #[cfg(feature = "old-codec")]
-        old_scale::Decode::decode(&mut &self.buffer[0..req_len]).ok_or(Into::into)
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "old-codec")] {
+                old_scale::Decode::decode(&mut &self.buffer[0..req_len]).ok_or(crate::env::EnvError::Decode(crate::env::error::Error::from("Decode error")))
+            } else {
+                scale::Decode::decode(&mut &self.buffer[0..req_len]).map_err(Into::into)
+            }
+        }
     }
 
     /// Encodes the value into the contract-side scratch buffer.

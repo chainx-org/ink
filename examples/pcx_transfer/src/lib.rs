@@ -23,20 +23,13 @@ mod pcx_transfer {
     use ink_core::{
         env::{
             chainx_calls,
-            chainx_types::{
-                AccountIndex,
-                Call,
-            },
+            chainx_types::{AccountIndex, Call},
             DefaultXrmlTypes,
         },
         storage,
     };
     use ink_prelude::collections::BTreeMap;
-    use scale::{
-        Decode,
-        Encode,
-        KeyedVec,
-    };
+    use scale::{Decode, Encode, KeyedVec};
 
     #[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Copy, Encode, Decode)]
     #[cfg_attr(feature = "ink-generate-abi", derive(type_metadata::Metadata))]
@@ -87,7 +80,7 @@ mod pcx_transfer {
 
         /// Returns the account balance, read directly from runtime storage
         #[ink(message)]
-        fn get_asset_balance(
+        fn gets_asset_balances(
             &self,
             account: AccountId,
         ) -> Option<Result<BTreeMap<AssetType, u64>, ()>> {
@@ -100,7 +93,7 @@ mod pcx_transfer {
             result.map(|x| {
                 x.map_err(|_| {
                     // self.env()
-                    // .println("Fail to decode BTreeMap<AssetType, u64>");
+                    //   .println("Fail to decode BTreeMap<AssetType, u64>");
                     ()
                 })
             })

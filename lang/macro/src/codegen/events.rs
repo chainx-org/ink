@@ -134,14 +134,15 @@ impl EventHelpers<'_> {
             .map(|item_event| &item_event.ident)
             .collect::<Vec<_>>();
 
-        #[cfg(feature = "old-codec")]
-        use old_scale::Encode;
-        #[allow(unused)]
-        #[cfg(not(feature = "old-codec"))]
-        use scale::Encode;
-
         quote! {
-            #[derive(Encode)]
+            #[cfg(feature = "old-codec")]
+            #[derive(old_scale::Encode)]
+            pub enum Event {
+                #( #event_idents(#event_idents), )*
+            }
+
+            #[cfg(not(feature = "old-codec"))]
+            #[derive(scale::Encode)]
             pub enum Event {
                 #( #event_idents(#event_idents), )*
             }

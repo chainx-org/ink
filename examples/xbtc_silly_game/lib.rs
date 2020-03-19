@@ -29,19 +29,12 @@ mod xbtc_silly_game {
 
         /// Transfer some value of xbtc token to this contract.
         ///
-        /// env.caller() ==> XbtcSillyGame contract
+        /// Prerequsite: caller needs to call approve(current_contract, value) of xrc20 contract
         #[ink(message)]
         fn deposit(&mut self, value: u64) -> bool {
-            let dest = self.env().account_id();
-            // cross calling xrc20 contract
-            // In delegate_xrc20_transfer:
-            // caller: this contract itself, i.e., xbtc_silly_game
-            //
-            //
-            // In xrc20 contact:
-            // transfer:
-            // caller: extenal user account
-            self.delegate_xrc20_transfer(dest, value)
+            let caller = self.env().caller();
+            let receiver = self.env().account_id();
+            self.xrc20_contract.transfer_from(caller, receiver, value)
         }
 
         /// Transfer some value of xbtc token from the contract to external account.

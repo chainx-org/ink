@@ -9,10 +9,6 @@ mod xbtc_silly_game {
         env::DefaultXrmlTypes,
         storage,
     };
-    use scale::{
-        Decode,
-        Encode,
-    };
 
     #[ink(storage)]
     struct XbtcSillyGame {
@@ -29,7 +25,7 @@ mod xbtc_silly_game {
 
         /// Transfer some value of xbtc token to this contract.
         ///
-        /// Prerequsite: caller needs to call approve(current_contract, value) of xrc20 contract
+        /// Prerequsite: caller needs to firstly call approve(current_contract, value) of XRC20 contract.
         #[ink(message)]
         fn deposit(&mut self, value: u64) -> bool {
             let caller = self.env().caller();
@@ -37,18 +33,12 @@ mod xbtc_silly_game {
             self.xrc20_contract.transfer_from(caller, receiver, value)
         }
 
-        /// Transfer some value of xbtc token from the contract to external account.
+        /// Transfer some value of xbtc token from this DAPP to some external account.
         ///
-        /// env.caller() ==> XbtcSillyGame contract
-        #[ink(message)]
-        fn reward(&mut self, receiver: AccountId, value: u64) -> bool {
-            self.delegate_xrc20_transfer(receiver, value)
-        }
-
         /// Delegate the `transfer` call of xrc20 contract.
         #[ink(message)]
-        fn delegate_xrc20_transfer(&mut self, dest: AccountId, value: u64) -> bool {
-            self.xrc20_contract.transfer(dest, value)
+        fn reward(&mut self, receiver: AccountId, value: u64) -> bool {
+            self.xrc20_contract.transfer(receiver, value)
         }
     }
 

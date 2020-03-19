@@ -5,11 +5,11 @@ authors = ["[your_name] <[your_email]>"]
 edition = "2018"
 
 [dependencies]
-ink_prelude = { git = "https://github.com/chainx-org/ink", branch = "env-revision3", package = "ink_prelude", default-features = false }
-ink_primitives = { git = "http://github.com/chainx-org/ink", branch = "env-revision3", package = "ink_primitives", default-features = false, features = ["old-codec"] }
-ink_abi = { git = "https://github.com/chainx-org/ink", branch = "env-revision3", package = "ink_abi", default-features = false, features = ["derive"], optional = true }
-ink_core = { git = "https://github.com/chainx-org/ink", branch = "env-revision3", package = "ink_core", default-features = false, features = ["old-codec"] }
-ink_lang = { git = "https://github.com/chainx-org/ink", branch = "env-revision3", package = "ink_lang", default-features = false, features = ["old-codec"] }
+ink_primitives = { path = "../../primitives", default-features = false, features = ["old-codec"] }
+ink_prelude = { path = "../../prelude", default-features = false }
+ink_abi = { path = "../../abi", default-features = false, features = ["derive"], optional = true }
+ink_core = { path = "../../core", default-features = false, features = ["old-codec"] }
+ink_lang = { path = "../../lang", default-features = false, features = ["old-codec"] }
 
 blake2-rfc = { version = "0.2.18", default-features = false }
 scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive"] }
@@ -19,10 +19,10 @@ type-metadata = { git = "https://github.com/type-metadata/type-metadata.git", de
 name = "pcx_transfer"
 path = "lib.rs"
 crate-type = [
-	# Used for normal contract Wasm blobs.
-	"cdylib",
-	# Used for ABI generation.
-	"rlib",
+    # Used for normal contract Wasm blobs.
+    "cdylib",
+    # Used for ABI generation.
+    "rlib",
 ]
 
 [features]
@@ -30,6 +30,7 @@ default = ["test-env"]
 std = [
     "ink_abi/std",
     "ink_core/std",
+    "ink_primitives/std",
     "scale/std",
     "type-metadata/std",
 ]
@@ -45,3 +46,17 @@ ink-generate-abi = [
     "ink_lang/ink-generate-abi",
 ]
 ink-as-dependency = []
+
+[profile.release]
+panic = "abort"
+lto = true
+opt-level = "z"
+overflow-checks = true
+
+[workspace]
+members = [
+	".ink/abi_gen"
+]
+exclude = [
+	".ink"
+]

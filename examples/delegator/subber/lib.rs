@@ -12,16 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(proc_macro_hygiene)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use ink_lang as ink;
 
 #[ink::contract(version = "0.1.0")]
 mod subber {
-    use accumulator::Accumulator;
     #[cfg(not(feature = "ink-as-dependency"))]
     use ink_core::storage;
+    use accumulator::Accumulator;
 
     /// Decreases the underlying accumulator's value.
     #[ink(storage)]

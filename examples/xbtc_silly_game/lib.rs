@@ -31,21 +31,31 @@ mod xbtc_silly_game {
         ///
         /// env.caller() ==> XbtcSillyGame contract
         #[ink(message)]
-        fn deposit(&mut self, value: u64) {
+        fn deposit(&mut self, value: u64) -> bool {
             let dest = self.env().account_id();
-            // self.env().println(
-            // "deposit from {} to {} value {}",
-            // self.env().caller(),
-            // dest,
-            // value,
-            // );
-            self.delegate_xrc20_transfer(dest, value);
+            // cross calling xrc20 contract
+            // In delegate_xrc20_transfer:
+            // caller: this contract itself, i.e., xbtc_silly_game
+            //
+            //
+            // In xrc20 contact:
+            // transfer:
+            // caller: extenal user account
+            self.delegate_xrc20_transfer(dest, value)
+        }
+
+        /// Transfer some value of xbtc token from the contract to external account.
+        ///
+        /// env.caller() ==> XbtcSillyGame contract
+        #[ink(message)]
+        fn reward(&mut self, receiver: AccountId, value: u64) -> bool {
+            self.delegate_xrc20_transfer(receiver, value)
         }
 
         /// Delegate the `transfer` call of xrc20 contract.
         #[ink(message)]
-        fn delegate_xrc20_transfer(&mut self, dest: AccountId, value: u64) {
-            self.xrc20_contract.transfer(dest, value);
+        fn delegate_xrc20_transfer(&mut self, dest: AccountId, value: u64) -> bool {
+            self.xrc20_contract.transfer(dest, value)
         }
     }
 

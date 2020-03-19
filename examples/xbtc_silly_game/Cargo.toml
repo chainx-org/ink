@@ -1,5 +1,5 @@
 [package]
-name = "pcx_transfer"
+name = "xbtc_silly_game"
 version = "0.1.0"
 authors = ["[your_name] <[your_email]>"]
 edition = "2018"
@@ -15,14 +15,16 @@ blake2-rfc = { version = "0.2.18", default-features = false }
 scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive"] }
 type-metadata = { git = "https://github.com/type-metadata/type-metadata.git", default-features = false, features = ["derive"], optional = true }
 
+xrc20 = { path = "xrc20", default-features = false, features = ["ink-as-dependency"] }
+
 [lib]
-name = "pcx_transfer"
+name = "xbtc_silly_game"
 path = "lib.rs"
 crate-type = [
-	# Used for normal contract Wasm blobs.
-	"cdylib",
-	# Used for ABI generation.
-	"rlib",
+    # Used for normal contract Wasm blobs.
+    "cdylib",
+    # Used for ABI generation.
+    "rlib",
 ]
 
 [features]
@@ -32,10 +34,14 @@ std = [
     "ink_core/std",
     "scale/std",
     "type-metadata/std",
+
+    "xrc20/std",
 ]
 test-env = [
     "std",
     "ink_lang/test-env",
+
+    "xrc20/std",
 ]
 ink-generate-abi = [
     "std",
@@ -43,5 +49,22 @@ ink-generate-abi = [
     "type-metadata",
     "ink_core/ink-generate-abi",
     "ink_lang/ink-generate-abi",
+
+    "xrc20/ink-generate-abi",
 ]
 ink-as-dependency = []
+
+[profile.release]
+panic = "abort"
+lto = true
+opt-level = "z"
+overflow-checks = true
+
+[workspace]
+members = [
+    ".ink/abi_gen",
+    "xrc20",
+]
+exclude = [
+    ".ink"
+]

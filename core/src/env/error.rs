@@ -38,6 +38,7 @@ impl Error {
         self.0
     }
 
+    #[allow(dead_code)]
     #[cfg(not(feature = "std"))]
     /// Error description
     ///

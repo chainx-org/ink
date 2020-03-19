@@ -55,7 +55,6 @@ mod pcx_transfer {
     #[ink(storage)]
     struct PcxTransfer {
         value: storage::Value<bool>,
-        test: storage::Value<AccountId>,
     }
 
     impl PcxTransfer {
@@ -82,10 +81,10 @@ mod pcx_transfer {
                 value,
                 b"memo".to_vec(),
             ));
-            self.env().invoke_runtime(&transfer_call);
+            let _ = self.env().invoke_runtime(&transfer_call);
         }
 
-        /// Returns the account balance, read directly from runtime storage
+        /// Returns the account PCX asset balance, read directly from runtime storage
         #[ink(message)]
         fn get_asset_balance(
             &self,
@@ -97,32 +96,36 @@ mod pcx_transfer {
             let result = self
                 .env()
                 .get_runtime_storage::<BTreeMap<AssetType, u64>>(&key[..]);
-            result.map(|x| {
-                x.map_err(|_| {
-                    // self.env()
-                    // .println("Fail to decode BTreeMap<AssetType, u64>");
-                    ()
-                })
-            })
+            result.map(|x| x.map_err(|_| ()))
         }
     }
 
+    /// Unit tests in Rust are normally defined within such a `#[cfg(test)]`
+    /// module and test functions are marked with a `#[test]` attribute.
+    /// The below code is technically just normal Rust code.
     #[cfg(test)]
     mod tests {
+        /// Imports all the definitions from the outer scope so we can use them here.
         use super::*;
 
+        /// We test if the default constructor does its job.
         #[test]
         fn default_works() {
-            let flipper = PcxTransfer::default();
-            assert_eq!(flipper.get(), false);
+            // Note that even though we defined our `#[ink(constructor)]`
+            // above as `&mut self` functions that return nothing we can call
+            // them in test code as if they were normal Rust constructors
+            // that take no `self` argument but return `Self`.
+            let pcx_transfer = PcxTransfer::default();
+            assert_eq!(pcx_transfer.get(), false);
         }
 
+        /// We test a simple use case of our contract.
         #[test]
         fn it_works() {
-            let mut flipper = PcxTransfer::new(false);
-            assert_eq!(flipper.get(), false);
-            flipper.flip();
-            assert_eq!(flipper.get(), true);
+            let mut pcx_transfer = PcxTransfer::new(false);
+            assert_eq!(pcx_transfer.get(), false);
+            pcx_transfer.flip();
+            assert_eq!(pcx_transfer.get(), true);
         }
     }
 }

@@ -16,6 +16,9 @@ scale = { package = "parity-codec", version = "3.5", default-features = false, f
 type-metadata = { git = "https://github.com/type-metadata/type-metadata.git", default-features = false, features = ["derive"], optional = true }
 
 xrc20 = { path = "xrc20", default-features = false, features = ["ink-as-dependency"] }
+btc-primitives = { package = "primitives", git = "https://github.com/chainx-org/light-bitcoin", default-features = false, features = ["codec"] }
+twox-hash = { version = "1.5.0", default-features = false }
+byteorder = { version = "1.3.2", default-features = false }
 
 [lib]
 name = "xbtc_silly_game"

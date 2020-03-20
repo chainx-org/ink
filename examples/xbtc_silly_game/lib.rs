@@ -44,8 +44,74 @@
 
 use ink_lang as ink;
 
+mod crypto {
+    use twox_hash;
+
+    /// Do a XX 128-bit hash and place result in `dest`.
+    pub fn twox_128_into(data: &[u8], dest: &mut [u8; 16]) {
+        use ::core::hash::Hasher;
+        let mut h0 = twox_hash::XxHash::with_seed(0);
+        let mut h1 = twox_hash::XxHash::with_seed(1);
+        h0.write(data);
+        h1.write(data);
+        let r0 = h0.finish();
+        let r1 = h1.finish();
+        use byteorder::{
+            ByteOrder,
+            LittleEndian,
+        };
+        LittleEndian::write_u64(&mut dest[0..8], r0);
+        LittleEndian::write_u64(&mut dest[8..16], r1);
+    }
+
+    /// Do a XX 128-bit hash and return result.
+    pub fn twox_128(data: &[u8]) -> [u8; 16] {
+        let mut r: [u8; 16] = [0; 16];
+        twox_128_into(data, &mut r);
+        r
+    }
+}
+
+#[derive(scale::Encode, scale::Decode)]
+pub struct H256Wrapper(btc_primitives::H256);
+
+impl From<btc_primitives::H256> for H256Wrapper {
+    fn from(h: btc_primitives::H256) -> Self {
+        Self(h)
+    }
+}
+
+#[cfg(feature = "std")]
+impl type_metadata::HasTypeId for H256Wrapper {
+    fn type_id() -> type_metadata::TypeId {
+        type_metadata::TypeIdCustom::new(
+            "H256",
+            type_metadata::Namespace::from_module_path("bitcoin_primitives")
+                .expect("non-empty Rust identifier namespaces cannot fail"),
+            Vec::new(),
+        )
+        .into()
+    }
+}
+
+#[cfg(feature = "std")]
+impl type_metadata::HasTypeDef for H256Wrapper {
+    fn type_def() -> type_metadata::TypeDef {
+        use ink_prelude::vec;
+        type_metadata::TypeDefTupleStruct::new(vec![type_metadata::UnnamedField::of::<
+            [u8; 32],
+        >()])
+        .into()
+    }
+}
+
 #[ink::contract(version = "0.1.0", env = DefaultXrmlTypes)]
 mod xbtc_silly_game {
+    use super::{
+        crypto,
+        H256Wrapper,
+    };
+    use btc_primitives::H256;
     use ink_core::{
         env::DefaultXrmlTypes,
         storage,
@@ -81,6 +147,15 @@ mod xbtc_silly_game {
         #[ink(message)]
         fn reward(&mut self, receiver: AccountId, value: u64) -> bool {
             self.xrc20_contract.transfer(receiver, value)
+        }
+
+        /// Returns the account balance, read directly from runtime storage
+        #[ink(message)]
+        fn get_best_index(&self) -> H256Wrapper {
+            const BEST_INDEX: &[u8] = b"XBridgeOfBTC BestIndex";
+            let key = crypto::twox_128(BEST_INDEX);
+            let result = self.env().get_runtime_storage::<H256>(&key[..]);
+            result.unwrap().unwrap().into()
         }
     }
 }

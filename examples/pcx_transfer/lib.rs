@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use ink_lang as ink;
@@ -20,16 +19,13 @@ mod crypto {
 #[ink::contract(version = "0.1.0", env = DefaultXrmlTypes)]
 mod pcx_transfer {
     use super::crypto;
-    use ink_core::{
-        env::{
-            chainx_calls,
-            chainx_types::{
-                AccountIndex,
-                Call,
-            },
-            DefaultXrmlTypes,
+    use ink_core::env::{
+        chainx_calls,
+        chainx_types::{
+            AccountIndex,
+            Call,
         },
-        storage,
+        DefaultXrmlTypes,
     };
     use ink_prelude::collections::BTreeMap;
     use scale::{
@@ -52,24 +48,19 @@ mod pcx_transfer {
         GasPayment,
     }
 
+    /// Defines the storage of your contract.
+    /// Add new fields to the below struct in order
+    /// to add new static storage fields to your contract.
     #[ink(storage)]
-    struct PcxTransfer {
-        value: storage::Value<bool>,
-        test: storage::Value<AccountId>,
-    }
+    struct PcxTransfer {}
 
     impl PcxTransfer {
+        /// Constructor
         #[ink(constructor)]
-        fn new(&mut self, init_value: bool) {
-            self.value.set(init_value);
-        }
-
-        #[ink(constructor)]
-        fn default(&mut self) {
-            self.new(false)
-        }
+        fn new(&mut self) {}
 
         /// Dispatches a `transfer` call to the ChainX Assets module.
+        /// Transfer PCX from this contract to dest account.
         #[ink(message)]
         fn pcx_transfer(&mut self, dest: AccountId, value: u64) {
             let dest_addr = chainx_calls::Address::Id(dest);
@@ -82,47 +73,48 @@ mod pcx_transfer {
                 value,
                 b"memo".to_vec(),
             ));
-            self.env().invoke_runtime(&transfer_call);
+            let _ = self.env().invoke_runtime(&transfer_call);
         }
 
         /// Returns the account balance, read directly from runtime storage
         #[ink(message)]
-        fn get_asset_balance(
-            &self,
-            account: AccountId,
-        ) -> Option<Result<BTreeMap<AssetType, u64>, ()>> {
+        fn get_asset_balance(&self, account: AccountId) -> BTreeMap<AssetType, u64> {
             const BALANCE_OF: &[u8] = b"XAssets AssetBalance";
             let pcx_balance = (account, b"PCX".to_vec());
             let key = crypto::blake2_256(&pcx_balance.to_keyed_vec(BALANCE_OF));
             let result = self
                 .env()
                 .get_runtime_storage::<BTreeMap<AssetType, u64>>(&key[..]);
-            result.map(|x| {
-                x.map_err(|_| {
-                    // self.env()
-                    // .println("Fail to decode BTreeMap<AssetType, u64>");
-                    ()
-                })
-            })
+            result.map(|x| x.unwrap_or_default()).unwrap_or_default()
         }
     }
 
+    /// Unit tests in Rust are normally defined within such a `#[cfg(test)]`
+    /// module and test functions are marked with a `#[test]` attribute.
+    /// The below code is technically just normal Rust code.
     #[cfg(test)]
     mod tests {
+        /// Imports all the definitions from the outer scope so we can use them here.
         use super::*;
 
+        /// We test if the default constructor does its job.
         #[test]
         fn default_works() {
-            let flipper = PcxTransfer::default();
-            assert_eq!(flipper.get(), false);
+            // Note that even though we defined our `#[ink(constructor)]`
+            // above as `&mut self` functions that return nothing we can call
+            // them in test code as if they were normal Rust constructors
+            // that take no `self` argument but return `Self`.
+            let pcx_transfer = PcxTransfer::default();
+            assert_eq!(pcx_transfer.get(), false);
         }
 
+        /// We test a simple use case of our contract.
         #[test]
         fn it_works() {
-            let mut flipper = PcxTransfer::new(false);
-            assert_eq!(flipper.get(), false);
-            flipper.flip();
-            assert_eq!(flipper.get(), true);
+            let mut pcx_transfer = PcxTransfer::new(false);
+            assert_eq!(pcx_transfer.get(), false);
+            pcx_transfer.flip();
+            assert_eq!(pcx_transfer.get(), true);
         }
     }
 }

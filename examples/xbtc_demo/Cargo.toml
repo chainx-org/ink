@@ -1,0 +1,80 @@
+[package]
+name = "xbtc_demo"
+version = "0.1.0"
+authors = ["[your_name] <[your_email]>"]
+edition = "2018"
+
+[dependencies]
+ink_abi = { git = "https://github.com/chainx-org/ink", branch = "env-revision3", package = "ink_abi", default-features = false, features = ["derive"], optional = true }
+ink_primitives = { git = "https://github.com/chainx-org/ink", branch = "env-revision3", package = "ink_primitives", default-features = false, features = ["old-codec"] }
+ink_core = { git = "https://github.com/chainx-org/ink", branch = "env-revision3", package = "ink_core", default-features = false, features = ["old-codec"] }
+ink_lang = { git = "https://github.com/chainx-org/ink", branch = "env-revision3", package = "ink_lang", default-features = false, features = ["old-codec"] }
+ink_prelude = { git = "https://github.com/chainx-org/ink", branch = "env-revision3", package = "ink_prelude", default-features = false }
+
+scale = { package = "parity-codec", version = "3.5", default-features = false, features = ["derive"] }
+
+xrc20 = { path = "xrc20", default-features = false, features = ["ink-as-dependency"] }
+twox-hash = { version = "1.5.0", default-features = false }
+byteorder = { version = "1.3.2", default-features = false }
+blake2-rfc = { version = "0.2.18", default-features = false }
+btc-primitives = { package = "primitives", git = "https://github.com/chainx-org/light-bitcoin", default-features = false, features = ["codec"] }
+
+[dependencies.type-metadata]
+git = "https://github.com/type-metadata/type-metadata.git"
+rev = "02eae9f35c40c943b56af5b60616219f2b72b47d"
+default-features = false
+features = ["derive"]
+optional = true
+
+[lib]
+name = "xbtc_demo"
+path = "lib.rs"
+crate-type = [
+	# Used for normal contract Wasm blobs.
+	"cdylib",
+	# Required for ABI generation, and using this contract as a dependency.
+	# If using `cargo contract build`, it will be automatically disabled to produce a smaller Wasm binary
+	"rlib",
+]
+
+[features]
+default = ["test-env"]
+std = [
+    "ink_abi/std",
+    "ink_core/std",
+    "scale/std",
+    "type-metadata/std",
+
+    "xrc20/std",
+]
+test-env = [
+    "std",
+    "ink_lang/test-env",
+
+    "xrc20/std",
+]
+ink-generate-abi = [
+    "std",
+    "ink_abi",
+    "type-metadata",
+    "ink_core/ink-generate-abi",
+    "ink_lang/ink-generate-abi",
+
+    "xrc20/ink-generate-abi",
+]
+ink-as-dependency = []
+
+[profile.release]
+panic = "abort"
+lto = true
+opt-level = "z"
+overflow-checks = true
+
+[workspace]
+members = [
+	".ink/abi_gen",
+    "xrc20",
+]
+exclude = [
+	".ink"
+]
